@@ -49,26 +49,35 @@ export type Database = {
       }
       matches: {
         Row: {
+          confidence: number | null
           created_at: string | null
           id: string
+          match_details: Json | null
           match_score: number
           photo_id: string
+          processed_at: string | null
           reference_photo_url: string
           user_id: string
         }
         Insert: {
+          confidence?: number | null
           created_at?: string | null
           id?: string
+          match_details?: Json | null
           match_score: number
           photo_id: string
+          processed_at?: string | null
           reference_photo_url: string
           user_id: string
         }
         Update: {
+          confidence?: number | null
           created_at?: string | null
           id?: string
+          match_details?: Json | null
           match_score?: number
           photo_id?: string
+          processed_at?: string | null
           reference_photo_url?: string
           user_id?: string
         }

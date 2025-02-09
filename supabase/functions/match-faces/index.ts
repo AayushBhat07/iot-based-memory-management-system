@@ -231,4 +231,3 @@ function calculateExpressionScore(face1: FaceFeatures, face2: FaceFeatures): num
   
   return matchCount / likelihoods.length;
 }
-
