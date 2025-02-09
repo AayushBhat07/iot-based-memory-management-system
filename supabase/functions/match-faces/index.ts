@@ -22,6 +22,16 @@ serve(async (req) => {
   try {
     console.log('Starting face matching process...');
 
+    // Validate request body
+    const { guestPhotoPath, photographerEventName, guestName } = await req.json() as MatchRequest;
+    
+    if (!guestPhotoPath || !photographerEventName || !guestName) {
+      throw new Error('Missing required parameters');
+    }
+
+    console.log('Request parameters:', { guestPhotoPath, photographerEventName, guestName });
+
+    // Validate Supabase configuration
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -31,19 +41,25 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { guestPhotoPath, photographerEventName, guestName } = await req.json() as MatchRequest;
-    
-    if (!guestPhotoPath || !photographerEventName || !guestName) {
-      throw new Error('Missing required parameters');
+    // Validate Google Vision credentials
+    const credentials = Deno.env.get('GOOGLE_VISION_CREDENTIALS');
+    if (!credentials) {
+      throw new Error('Missing Google Vision credentials');
     }
 
-    console.log('Processing request for guest:', guestName);
+    try {
+      JSON.parse(credentials);
+    } catch (e) {
+      throw new Error('Invalid Google Vision credentials format');
+    }
 
-    // Initialize Google Cloud Vision client
-    const credentials = JSON.parse(Deno.env.get('GOOGLE_VISION_CREDENTIALS') || '{}');
-    const client = new vision.ImageAnnotatorClient({ credentials });
+    console.log('Initializing Google Vision client...');
+    const client = new vision.ImageAnnotatorClient({ 
+      credentials: JSON.parse(credentials)
+    });
 
     // Get reference photo face detection
+    console.log('Detecting faces in reference photo:', guestPhotoPath);
     const [guestResult] = await client.faceDetection(guestPhotoPath);
     const guestFaces = guestResult.faceAnnotations;
 
@@ -51,43 +67,74 @@ serve(async (req) => {
       throw new Error('No face detected in reference photo');
     }
 
+    console.log(`Found ${guestFaces.length} faces in reference photo`);
+
     // Get all photographer photos
     const { data: photographerPhotos, error: listError } = await supabase.storage
       .from('photographer-uploads')
       .list(photographerEventName);
 
-    if (listError) throw listError;
+    if (listError) {
+      console.error('Error listing photographer photos:', listError);
+      throw listError;
+    }
+
+    if (!photographerPhotos?.length) {
+      console.log('No photographer photos found in event:', photographerEventName);
+      return new Response(
+        JSON.stringify({ 
+          message: 'No photos found in event folder',
+          totalPhotos: 0
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`Found ${photographerPhotos.length} photographer photos to process`);
 
     const guestFolderPath = `${photographerEventName}/${guestName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
     
     // Process each photographer photo
-    for (const photo of photographerPhotos || []) {
+    for (const photo of photographerPhotos) {
       try {
+        console.log('Processing photo:', photo.name);
+        
         const { data: urlData } = await supabase.storage
           .from('photographer-uploads')
           .createSignedUrl(`${photographerEventName}/${photo.name}`, 60);
 
-        if (!urlData?.signedUrl) continue;
+        if (!urlData?.signedUrl) {
+          console.log('Could not generate signed URL for photo:', photo.name);
+          continue;
+        }
 
         const [photographerResult] = await client.faceDetection(urlData.signedUrl);
         const photographerFaces = photographerResult.faceAnnotations;
 
-        if (!photographerFaces?.length) continue;
+        if (!photographerFaces?.length) {
+          console.log('No faces detected in photo:', photo.name);
+          continue;
+        }
+
+        console.log(`Found ${photographerFaces.length} faces in photo:`, photo.name);
 
         // Basic confidence check from Google Vision API
         const isMatch = photographerFaces.some(face => face.detectionConfidence > 0.8);
         
         if (isMatch) {
+          console.log('Match found in photo:', photo.name);
+          
           // Copy matched photo to guest's folder
           const sourceFile = `${photographerEventName}/${photo.name}`;
           const destinationFile = `${guestFolderPath}/${photo.name}`;
 
+          // Create guest folder if it doesn't exist
           const { data: photoExists } = await supabase.storage
             .from('photographer-uploads')
             .list(guestFolderPath);
 
-          // Create guest folder if it doesn't exist
           if (!photoExists) {
+            console.log('Creating guest folder:', guestFolderPath);
             await supabase.storage
               .from('photographer-uploads')
               .upload(`${guestFolderPath}/.folder`, new Uint8Array());
@@ -102,6 +149,8 @@ serve(async (req) => {
             console.error('Error copying file:', copyError);
             continue;
           }
+
+          console.log('Successfully copied photo to guest folder:', destinationFile);
 
           // Get public URL for the copied photo
           const { data: { publicUrl } } = supabase.storage
@@ -152,6 +201,8 @@ serve(async (req) => {
       throw guestPhotosError;
     }
 
+    console.log('Processing complete. Total photos in guest folder:', guestPhotos?.length || 0);
+
     return new Response(
       JSON.stringify({
         message: 'Processing complete',
@@ -164,7 +215,11 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in face matching process:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        stack: error.stack, // Include stack trace for debugging
+        name: error.name
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
