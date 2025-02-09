@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { Camera, User, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -173,7 +174,8 @@ const Index = () => {
             <div
               key={index}
               className="p-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 
-                       transition-all duration-300 hover:bg-white/10 hover:shadow-lg hover:-translate-y-1"
+                       transition-all duration-300 hover:bg-white/10 hover:shadow-lg hover:-translate-y-1
+                       shadow-md border-white/20"
             >
               <h3 className="font-medium mb-2">{feature.title}</h3>
               <p className="text-sm text-muted-foreground">{feature.description}</p>
@@ -191,11 +193,11 @@ const features = [
     description: "Advanced facial recognition to find your photos with precision",
   },
   {
-    title: "Who's Who? AI Face Recognition Knows!",
+    title: "Unmatched Accuracy in Face Recognition. AI at Its Best.",
     description: "Get matched photos in seconds, not hours",
   },
   {
-    title: "Enhanced Security with AI Face Recognition",
+    title: "Identify Attendees Instantly. AI Face Recognition at Your Service.",
     description: "Your photos and data are always protected",
   },
 ];
