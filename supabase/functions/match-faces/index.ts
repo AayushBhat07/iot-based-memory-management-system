@@ -32,15 +32,21 @@ serve(async (req) => {
   try {
     console.log('Starting face matching process...');
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Missing required Supabase configuration');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Parse and validate request
-    const { guestPhotoPath, photographerEventName, guestName } = await req.json() as MatchRequest
+    const { guestPhotoPath, photographerEventName, guestName } = await req.json() as MatchRequest;
     
     if (!guestPhotoPath || !photographerEventName || !guestName) {
+      console.error('Missing required parameters:', { guestPhotoPath, photographerEventName, guestName });
       throw new Error('Missing required parameters');
     }
 
@@ -50,8 +56,9 @@ serve(async (req) => {
     const credentials = JSON.parse(Deno.env.get('GOOGLE_VISION_CREDENTIALS') || '{}');
     console.log('Initializing Vision API with credentials type:', credentials.type);
     
-    if (!credentials.client_email) {
-      throw new Error('Invalid Google Vision credentials - missing client_email');
+    if (!credentials.client_email || !credentials.private_key) {
+      console.error('Invalid Google Vision credentials structure');
+      throw new Error('Invalid Google Vision credentials - missing required fields');
     }
 
     const client = new vision.ImageAnnotatorClient({
@@ -92,114 +99,131 @@ serve(async (req) => {
       throw listError;
     }
 
-    console.log(`Found ${photographerPhotos?.length || 0} photographer photos`);
-
-    // Enhanced face detection for guest photo
-    const [guestResult] = await client.faceDetection(photoRecord.url);
-    console.log('Guest photo face detection completed');
-    
-    const guestFaces = guestResult.faceAnnotations;
-    if (!guestFaces?.length) {
-      console.error('No faces detected in guest photo:', photoRecord.url);
+    if (!photographerPhotos || photographerPhotos.length === 0) {
+      console.log('No photographer photos found in event:', photographerEventName);
       return new Response(
-        JSON.stringify({ error: 'No face detected in guest photo' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        JSON.stringify({ message: 'No photographer photos found for this event' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
     }
 
-    // Extract comprehensive face features for the guest
-    const guestFeatures = extractFaceFeatures(guestFaces[0]);
-    console.log('Guest face features extracted successfully');
+    console.log(`Found ${photographerPhotos.length} photographer photos`);
 
-    const matches = [];
-    let processedPhotos = 0;
-
-    // Compare with each photographer photo
-    for (const photo of photographerPhotos || []) {
-      console.log(`Processing photo: ${photo.name}`);
+    // Enhanced face detection for guest photo
+    try {
+      const [guestResult] = await client.faceDetection(photoRecord.url);
+      console.log('Guest photo face detection completed');
       
-      const { data: urlData } = await supabase.storage
-        .from('photographer-uploads')
-        .createSignedUrl(`${photographerEventName}/${photo.name}`, 60);
-
-      if (!urlData?.signedUrl) {
-        console.log(`Could not get signed URL for photo: ${photo.name}`);
-        continue;
+      const guestFaces = guestResult.faceAnnotations;
+      if (!guestFaces?.length) {
+        console.error('No faces detected in guest photo:', photoRecord.url);
+        return new Response(
+          JSON.stringify({ error: 'No face detected in guest photo' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
       }
 
-      try {
-        const [photographerResult] = await client.faceDetection(urlData.signedUrl);
-        const photographerFaces = photographerResult.faceAnnotations;
+      // Extract comprehensive face features for the guest
+      const guestFeatures = extractFaceFeatures(guestFaces[0]);
+      console.log('Guest face features extracted successfully');
 
-        if (!photographerFaces?.length) {
-          console.log(`No faces detected in photographer photo: ${photo.name}`);
+      const matches = [];
+      let processedPhotos = 0;
+
+      // Compare with each photographer photo
+      for (const photo of photographerPhotos) {
+        try {
+          console.log(`Processing photo: ${photo.name}`);
+          
+          const { data: urlData } = await supabase.storage
+            .from('photographer-uploads')
+            .createSignedUrl(`${photographerEventName}/${photo.name}`, 60);
+
+          if (!urlData?.signedUrl) {
+            console.log(`Could not get signed URL for photo: ${photo.name}`);
+            continue;
+          }
+
+          const [photographerResult] = await client.faceDetection(urlData.signedUrl);
+          const photographerFaces = photographerResult.faceAnnotations;
+
+          if (!photographerFaces?.length) {
+            console.log(`No faces detected in photographer photo: ${photo.name}`);
+            continue;
+          }
+
+          console.log(`Found ${photographerFaces.length} faces in photographer photo: ${photo.name}`);
+
+          // Extract features for each photographer's photo
+          const photographerFeatures = extractFaceFeatures(photographerFaces[0]);
+          
+          // Enhanced comparison using multiple criteria
+          const matchResult = compareGoogleVisionFaces(guestFeatures, photographerFeatures);
+          processedPhotos++;
+
+          console.log(`Match score for ${photo.name}: ${matchResult.confidence}`);
+
+          if (matchResult.confidence > 0.75) {
+            // Get the public URL for the photographer's photo
+            const { data: { publicUrl } } = supabase.storage
+              .from('photographer-uploads')
+              .getPublicUrl(`${photographerEventName}/${photo.name}`);
+
+            const match = {
+              reference_photo_url: photoRecord.url,
+              photo_id: photo.name,
+              confidence: matchResult.confidence,
+              match_details: matchResult.details,
+              guest_name: guestName,
+              match_score: matchResult.confidence,
+              processed_at: new Date().toISOString()
+            };
+            
+            matches.push(match);
+            console.log(`Match found in photo ${photo.name} with confidence: ${matchResult.confidence}`);
+            
+            // Insert match into database
+            const { error: insertError } = await supabase
+              .from('matches')
+              .insert([{
+                ...match,
+                user_id: null // explicitly set to null for matches
+              }]);
+
+            if (insertError) {
+              console.error('Error inserting match:', insertError);
+              // Continue processing other photos even if one insert fails
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing photo ${photo.name}:`, error);
           continue;
         }
-
-        console.log(`Found ${photographerFaces.length} faces in photographer photo: ${photo.name}`);
-
-        // Extract features for each photographer's photo
-        const photographerFeatures = extractFaceFeatures(photographerFaces[0]);
-        
-        // Enhanced comparison using multiple criteria
-        const matchResult = compareGoogleVisionFaces(guestFeatures, photographerFeatures);
-        processedPhotos++;
-
-        console.log(`Match score for ${photo.name}: ${matchResult.confidence}`);
-
-        if (matchResult.confidence > 0.75) {
-          // Get the public URL for the photographer's photo
-          const { data: { publicUrl } } = supabase.storage
-            .from('photographer-uploads')
-            .getPublicUrl(`${photographerEventName}/${photo.name}`);
-
-          const match = {
-            reference_photo_url: photoRecord.url,
-            photo_id: photo.name,
-            confidence: matchResult.confidence,
-            match_details: matchResult.details, // Send as object
-            guest_name: guestName,
-            match_score: matchResult.confidence,
-            processed_at: new Date().toISOString()
-          };
-          
-          matches.push(match);
-          console.log(`Match found in photo ${photo.name} with confidence: ${matchResult.confidence}`);
-          
-          // Insert match into database
-          const { error: insertError } = await supabase
-            .from('matches')
-            .insert([{
-              ...match,
-              user_id: null // explicitly set to null for matches
-            }]);
-
-          if (insertError) {
-            console.error('Error inserting match:', insertError);
-            // Continue processing other photos even if one insert fails
-          }
-        }
-      } catch (error) {
-        console.error(`Error processing photo ${photo.name}:`, error);
-        continue;
       }
+
+      console.log(`Processed ${processedPhotos} photos, found ${matches.length} matches`);
+
+      return new Response(
+        JSON.stringify({ 
+          matches,
+          totalProcessed: processedPhotos,
+          matchCount: matches.length
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
+
+    } catch (visionError) {
+      console.error('Error during face detection:', visionError);
+      throw new Error(`Face detection error: ${visionError.message}`);
     }
-
-    console.log(`Processed ${processedPhotos} photos, found ${matches.length} matches`);
-
-    return new Response(
-      JSON.stringify({ 
-        matches,
-        totalProcessed: processedPhotos,
-        matchCount: matches.length
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-    );
 
   } catch (error) {
     console.error('Error in face matching process:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        stack: error.stack // Include stack trace for debugging
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
