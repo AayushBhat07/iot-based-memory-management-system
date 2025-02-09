@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -86,12 +87,14 @@ const PhotographerLogin = () => {
   const messages = [
     "Experience the Difference. Professional Photography That Shines.",
     "More Than Just Photos, We Deliver Art.",
+    "Capturing Moments That Last Forever.",
+    "Creating Memories One Click at a Time.",
   ];
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 relative">
       <div className="w-full max-w-6xl mx-auto mb-12 flex justify-between px-8">
-        {messages.map((message, index) => (
+        {messages.slice(0, 2).map((message, index) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, y: -20 }}
@@ -159,6 +162,30 @@ const PhotographerLogin = () => {
             </Button>
           </div>
         </form>
+      </div>
+
+      <div className="w-full max-w-6xl mx-auto mt-12 flex justify-between px-8">
+        {messages.slice(2, 4).map((message, index) => (
+          <motion.div
+            key={index + 2}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ 
+              opacity: 0.9,
+              y: 0,
+            }}
+            transition={{ 
+              duration: 0.8,
+              delay: (index + 2) * 0.2,
+              ease: "easeOut"
+            }}
+            className="max-w-xs p-6 rounded-2xl bg-white/10 backdrop-blur-lg
+              border border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)]
+              hover:shadow-[0_8px_32px_rgba(31,38,135,0.25)]
+              transition-all duration-300 hover:-translate-y-1"
+          >
+            <p className="text-white/90 text-sm font-medium">{message}</p>
+          </motion.div>
+        ))}
       </div>
     </div>
   );
