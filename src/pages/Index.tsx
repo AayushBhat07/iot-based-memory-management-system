@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { Camera, User, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -89,10 +90,17 @@ const Index = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="glass-card rounded-2xl p-8 hover-card"
+            className="relative overflow-hidden rounded-2xl p-8 transition-all duration-300
+                     bg-white/10 backdrop-blur-md border border-white/20
+                     hover:bg-white/15 hover:shadow-2xl hover:-translate-y-1
+                     dark:bg-gray-800/40 dark:border-white/10"
+            style={{
+              boxShadow: "0 4px 32px -12px rgba(0, 0, 0, 0.2)",
+            }}
           >
             <div className="space-y-4">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center
+                          transform transition-transform duration-300 hover:scale-110">
                 <Camera className="h-6 w-6 text-primary" />
               </div>
               <h2 className="text-2xl font-semibold">For Photographers</h2>
@@ -100,10 +108,16 @@ const Index = () => {
                 Upload and manage your event galleries. Let your clients easily find
                 their photos using AI matching.
               </p>
-              <Button asChild className="w-full group">
+              <Button 
+                asChild 
+                className="w-full group relative overflow-hidden transition-all duration-300
+                          hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+              >
                 <Link to="/photographer/login">
-                  Photographer Login
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <span className="relative z-10 flex items-center justify-center">
+                    Photographer Login
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </span>
                 </Link>
               </Button>
             </div>
@@ -114,10 +128,17 @@ const Index = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="glass-card rounded-2xl p-8 hover-card"
+            className="relative overflow-hidden rounded-2xl p-8 transition-all duration-300
+                     bg-white/10 backdrop-blur-md border border-white/20
+                     hover:bg-white/15 hover:shadow-2xl hover:-translate-y-1
+                     dark:bg-gray-800/40 dark:border-white/10"
+            style={{
+              boxShadow: "0 4px 32px -12px rgba(0, 0, 0, 0.2)",
+            }}
           >
             <div className="space-y-4">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center
+                          transform transition-transform duration-300 hover:scale-110">
                 <User className="h-6 w-6 text-primary" />
               </div>
               <h2 className="text-2xl font-semibold">For Users</h2>
@@ -125,10 +146,17 @@ const Index = () => {
                 Upload a reference photo and let our AI find all your matching
                 photos from event galleries.
               </p>
-              <Button asChild variant="secondary" className="w-full group">
+              <Button 
+                asChild 
+                variant="secondary" 
+                className="w-full group relative overflow-hidden transition-all duration-300
+                          hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+              >
                 <Link to="/user/search">
-                  Find Your Photos
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <span className="relative z-10 flex items-center justify-center">
+                    Find Your Photos
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </span>
                 </Link>
               </Button>
             </div>
@@ -145,7 +173,8 @@ const Index = () => {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="p-6 rounded-xl bg-background/50 backdrop-blur border hover:border-primary/20 transition-colors"
+              className="p-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 
+                       transition-all duration-300 hover:bg-white/10 hover:shadow-lg hover:-translate-y-1"
             >
               <h3 className="font-medium mb-2">{feature.title}</h3>
               <p className="text-sm text-muted-foreground">{feature.description}</p>
