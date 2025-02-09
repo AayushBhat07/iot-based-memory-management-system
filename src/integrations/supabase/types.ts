@@ -58,7 +58,7 @@ export type Database = {
           photo_id: string
           processed_at: string | null
           reference_photo_url: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           confidence?: number | null
@@ -70,7 +70,7 @@ export type Database = {
           photo_id: string
           processed_at?: string | null
           reference_photo_url: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           confidence?: number | null
@@ -82,7 +82,7 @@ export type Database = {
           photo_id?: string
           processed_at?: string | null
           reference_photo_url?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
