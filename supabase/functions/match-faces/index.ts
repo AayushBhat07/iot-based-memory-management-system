@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 import vision from 'npm:@google-cloud/vision@4.0.3'
@@ -45,15 +46,18 @@ serve(async (req) => {
 
     console.log('Starting face matching process for guest:', guestName);
 
-    // Extract just the filename from the full path if it contains the bucket name
-    const photoPathParts = guestPhotoPath.split('/');
-    const fileName = photoPathParts[photoPathParts.length - 1];
+    // Extract the relative path by removing the storage URL prefix
+    const storageUrl = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/guest-reference-photos/`;
+    let relativePath = guestPhotoPath;
+    if (guestPhotoPath.startsWith(storageUrl)) {
+      relativePath = guestPhotoPath.substring(storageUrl.length);
+    }
     
-    console.log('Attempting to access guest photo with path:', fileName);
+    console.log('Attempting to access guest photo with relative path:', relativePath);
 
     const { data: guestPhotoData, error: signedUrlError } = await supabase.storage
       .from('guest-reference-photos')
-      .createSignedUrl(fileName, 60);
+      .createSignedUrl(relativePath, 60);
 
     if (signedUrlError || !guestPhotoData?.signedUrl) {
       console.error('Error creating signed URL:', signedUrlError);
