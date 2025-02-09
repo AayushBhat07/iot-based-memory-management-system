@@ -187,15 +187,15 @@ const Index = () => {
 
 const features = [
   {
-    title: "AI-Powered Matching",
+    title: "Who's Who? AI Face Recognition Knows!",
     description: "Advanced facial recognition to find your photos with precision",
   },
   {
-    title: "Instant Results",
+    title: "Who's Who? AI Face Recognition Knows!",
     description: "Get matched photos in seconds, not hours",
   },
   {
-    title: "Secure & Private",
+    title: "Enhanced Security with AI Face Recognition",
     description: "Your photos and data are always protected",
   },
 ];
