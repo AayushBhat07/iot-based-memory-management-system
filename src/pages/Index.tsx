@@ -16,7 +16,7 @@ const Index = () => {
           className="text-center space-y-6"
         >
           <span className="px-4 py-2 rounded-full bg-primary/10 text-primary inline-block animate-fade-down">
-            Introducing AI-Powered Photo Matching
+            Introducing Iot Based Memory Mangement System Integrated With AI
           </span>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight animate-fade-up">
             Find Your Photos with
@@ -24,8 +24,7 @@ const Index = () => {
             <span className="text-primary">Perfect Precision</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto animate-fade-up">
-            Advanced AI technology matches your reference photo across entire
-            galleries, making it effortless to find yourself in event photos.
+            Wedding Photo Search? AI Just Made it a Piece of Cake!
           </p>
         </motion.div>
 
