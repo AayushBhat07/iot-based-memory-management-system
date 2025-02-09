@@ -33,7 +33,12 @@ const Search = () => {
     const fetchAllMatches = async () => {
       const { data, error } = await supabase
         .from('matches')
-        .select('*')
+        .select(`
+          *,
+          photos (
+            url
+          )
+        `)
         .order('created_at', { ascending: false });
       
       if (error) {
