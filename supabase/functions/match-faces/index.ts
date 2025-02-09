@@ -30,20 +30,35 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting face matching process...');
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    // Parse and validate request
     const { guestPhotoPath, photographerEventName, guestName } = await req.json() as MatchRequest
     
+    if (!guestPhotoPath || !photographerEventName || !guestName) {
+      throw new Error('Missing required parameters');
+    }
+
     console.log('Received request with:', { guestPhotoPath, photographerEventName, guestName });
 
-    // Initialize Google Cloud Vision client
+    // Initialize Google Cloud Vision client with credentials
+    const credentials = JSON.parse(Deno.env.get('GOOGLE_VISION_CREDENTIALS') || '{}');
+    console.log('Initializing Vision API with credentials type:', credentials.type);
+    
+    if (!credentials.client_email) {
+      throw new Error('Invalid Google Vision credentials - missing client_email');
+    }
+
     const client = new vision.ImageAnnotatorClient({
-      credentials: JSON.parse(Deno.env.get('GOOGLE_VISION_CREDENTIALS') || '{}'),
+      credentials: credentials,
     });
 
+    console.log('Vision API client initialized successfully');
     console.log('Starting face matching process for guest:', guestName);
 
     // Get the reference photo
@@ -81,8 +96,9 @@ serve(async (req) => {
 
     // Enhanced face detection for guest photo
     const [guestResult] = await client.faceDetection(photoRecord.url);
+    console.log('Guest photo face detection completed');
+    
     const guestFaces = guestResult.faceAnnotations;
-
     if (!guestFaces?.length) {
       console.error('No faces detected in guest photo:', photoRecord.url);
       return new Response(
@@ -100,6 +116,8 @@ serve(async (req) => {
 
     // Compare with each photographer photo
     for (const photo of photographerPhotos || []) {
+      console.log(`Processing photo: ${photo.name}`);
+      
       const { data: urlData } = await supabase.storage
         .from('photographer-uploads')
         .createSignedUrl(`${photographerEventName}/${photo.name}`, 60);
@@ -118,12 +136,16 @@ serve(async (req) => {
           continue;
         }
 
+        console.log(`Found ${photographerFaces.length} faces in photographer photo: ${photo.name}`);
+
         // Extract features for each photographer's photo
         const photographerFeatures = extractFaceFeatures(photographerFaces[0]);
         
         // Enhanced comparison using multiple criteria
         const matchResult = compareGoogleVisionFaces(guestFeatures, photographerFeatures);
         processedPhotos++;
+
+        console.log(`Match score for ${photo.name}: ${matchResult.confidence}`);
 
         if (matchResult.confidence > 0.75) {
           // Get the public URL for the photographer's photo
@@ -135,7 +157,7 @@ serve(async (req) => {
             reference_photo_url: photoRecord.url,
             photo_id: photo.name,
             confidence: matchResult.confidence,
-            match_details: JSON.stringify(matchResult.details), // Convert to string
+            match_details: matchResult.details, // Send as object
             guest_name: guestName,
             match_score: matchResult.confidence,
             processed_at: new Date().toISOString()
@@ -144,17 +166,17 @@ serve(async (req) => {
           matches.push(match);
           console.log(`Match found in photo ${photo.name} with confidence: ${matchResult.confidence}`);
           
-          // Insert each match into the database immediately
+          // Insert match into database
           const { error: insertError } = await supabase
             .from('matches')
             .insert([{
               ...match,
-              match_details: matchResult.details, // Send as object, not string
               user_id: null // explicitly set to null for matches
             }]);
 
           if (insertError) {
             console.error('Error inserting match:', insertError);
+            // Continue processing other photos even if one insert fails
           }
         }
       } catch (error) {
