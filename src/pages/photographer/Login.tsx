@@ -36,7 +36,7 @@ const PhotographerLogin = () => {
           title: "Signed in successfully",
           description: "Welcome back!",
         });
-        navigate("/photographer/upload");
+        navigate("/photographer/options");
       }
     } catch (error) {
       toast({
