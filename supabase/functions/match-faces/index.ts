@@ -14,8 +14,17 @@ interface MatchRequest {
   guestName: string;
 }
 
+interface FaceFeatures {
+  landmarks: any[];
+  detectionConfidence: number;
+  joyLikelihood: string;
+  sorrowLikelihood: string;
+  angerLikelihood: string;
+  surpriseLikelihood: string;
+  headwearLikelihood: string;
+}
+
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -28,21 +37,22 @@ serve(async (req) => {
 
     const { guestPhotoPath, photographerEventName, guestName } = await req.json() as MatchRequest
 
-    // Initialize Google Cloud Vision client
+    // Initialize Google Cloud Vision client with improved error handling
     const client = new vision.ImageAnnotatorClient({
       credentials: JSON.parse(Deno.env.get('GOOGLE_VISION_CREDENTIALS') || '{}'),
     });
 
-    // Get the guest photo URL
+    console.log('Starting face matching process for guest:', guestName);
+
     const { data: guestPhotoData } = await supabase.storage
       .from('guest-reference-photos')
-      .createSignedUrl(guestPhotoPath, 60) // 60 seconds expiry
+      .createSignedUrl(guestPhotoPath, 60)
 
     if (!guestPhotoData?.signedUrl) {
       throw new Error('Could not access guest photo')
     }
 
-    // Get list of photographer photos for the event
+    // Get list of photographer photos
     const { data: photographerPhotos, error: listError } = await supabase.storage
       .from('photographer-uploads')
       .list(photographerEventName)
@@ -51,7 +61,7 @@ serve(async (req) => {
       throw listError
     }
 
-    // Get face detection for guest photo
+    // Enhanced face detection for guest photo
     const [guestResult] = await client.faceDetection(guestPhotoData.signedUrl);
     const guestFaces = guestResult.faceAnnotations;
 
@@ -62,9 +72,14 @@ serve(async (req) => {
       )
     }
 
-    const matches = [];
+    // Extract comprehensive face features for the guest
+    const guestFeatures = extractFaceFeatures(guestFaces[0]);
+    console.log('Guest face features extracted successfully');
 
-    // Compare with each photographer photo
+    const matches = [];
+    let processedPhotos = 0;
+
+    // Compare with each photographer photo with improved matching
     for (const photo of photographerPhotos) {
       const { data: photographerPhotoData } = await supabase.storage
         .from('photographer-uploads')
@@ -72,26 +87,44 @@ serve(async (req) => {
 
       if (!photographerPhotoData?.signedUrl) continue;
 
-      const [photographerResult] = await client.faceDetection(photographerPhotoData.signedUrl);
-      const photographerFaces = photographerResult.faceAnnotations;
+      try {
+        const [photographerResult] = await client.faceDetection(photographerPhotoData.signedUrl);
+        const photographerFaces = photographerResult.faceAnnotations;
 
-      if (!photographerFaces?.length) continue;
+        if (!photographerFaces?.length) {
+          console.log(`No faces detected in photographer photo: ${photo.name}`);
+          continue;
+        }
 
-      // Compare faces using confidence scores and landmarks
-      const confidence = compareGoogleVisionFaces(guestFaces[0], photographerFaces[0]);
+        // Extract features for the photographer's photo
+        const photographerFeatures = extractFaceFeatures(photographerFaces[0]);
+        
+        // Enhanced comparison using multiple criteria
+        const matchResult = compareGoogleVisionFaces(guestFeatures, photographerFeatures);
+        processedPhotos++;
 
-      if (confidence > 0.7) { // Minimum confidence threshold
-        matches.push({
-          guest_photo_path: guestPhotoPath,
-          photographer_photo_path: `${photographerEventName}/${photo.name}`,
-          confidence,
-          guest_name: guestName,
-          event_name: photographerEventName
-        });
+        if (matchResult.confidence > 0.75) { // Increased threshold for higher accuracy
+          matches.push({
+            guest_photo_path: guestPhotoPath,
+            photographer_photo_path: `${photographerEventName}/${photo.name}`,
+            confidence: matchResult.confidence,
+            match_details: matchResult.details,
+            guest_name: guestName,
+            event_name: photographerEventName,
+            processed_at: new Date().toISOString()
+          });
+
+          console.log(`Match found in photo ${photo.name} with confidence: ${matchResult.confidence}`);
+        }
+      } catch (error) {
+        console.error(`Error processing photo ${photo.name}:`, error);
+        continue;
       }
     }
 
-    // Store matches in database
+    console.log(`Processed ${processedPhotos} photos, found ${matches.length} matches`);
+
+    // Store matches in database with additional metadata
     if (matches.length > 0) {
       const { error: insertError } = await supabase
         .from('matches')
@@ -101,11 +134,16 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ matches }),
+      JSON.stringify({ 
+        matches,
+        totalProcessed: processedPhotos,
+        matchCount: matches.length
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
 
   } catch (error) {
+    console.error('Error in face matching process:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
@@ -113,37 +151,84 @@ serve(async (req) => {
   }
 })
 
-// Helper function to compare faces using Google Vision API results
-function compareGoogleVisionFaces(face1: any, face2: any) {
-  // Compare detection confidence
+function extractFaceFeatures(face: any): FaceFeatures {
+  return {
+    landmarks: face.landmarks || [],
+    detectionConfidence: face.detectionConfidence || 0,
+    joyLikelihood: face.joyLikelihood || 'UNKNOWN',
+    sorrowLikelihood: face.sorrowLikelihood || 'UNKNOWN',
+    angerLikelihood: face.angerLikelihood || 'UNKNOWN',
+    surpriseLikelihood: face.surpriseLikelihood || 'UNKNOWN',
+    headwearLikelihood: face.headwearLikelihood || 'UNKNOWN'
+  };
+}
+
+function compareGoogleVisionFaces(face1: FaceFeatures, face2: FaceFeatures) {
+  // Enhanced detection confidence comparison
   const confidenceScore = (face1.detectionConfidence + face2.detectionConfidence) / 2;
 
-  // Compare facial landmarks (basic implementation)
+  // Improved landmark comparison with weighted scoring
+  let landmarkScore = 0;
   const landmarks1 = face1.landmarks || [];
   const landmarks2 = face2.landmarks || [];
   
-  let landmarkScore = 0;
   if (landmarks1.length > 0 && landmarks2.length > 0) {
-    // Calculate normalized distance between corresponding landmarks
     const landmarkPairs = Math.min(landmarks1.length, landmarks2.length);
     let totalDistance = 0;
+    let validPairs = 0;
     
     for (let i = 0; i < landmarkPairs; i++) {
       const l1 = landmarks1[i];
       const l2 = landmarks2[i];
-      if (l1 && l2 && l1.position && l2.position) {
+      if (l1?.position && l2?.position) {
+        // Calculate normalized 3D distance
         const distance = Math.sqrt(
           Math.pow(l1.position.x - l2.position.x, 2) +
-          Math.pow(l1.position.y - l2.position.y, 2)
+          Math.pow(l1.position.y - l2.position.y, 2) +
+          Math.pow((l1.position.z || 0) - (l2.position.z || 0), 2)
         );
         totalDistance += distance;
+        validPairs++;
       }
     }
     
-    landmarkScore = 1 - (totalDistance / landmarkPairs / 100); // Normalize to 0-1
-    landmarkScore = Math.max(0, Math.min(1, landmarkScore)); // Clamp between 0 and 1
+    if (validPairs > 0) {
+      landmarkScore = 1 - (totalDistance / validPairs / 100);
+      landmarkScore = Math.max(0, Math.min(1, landmarkScore));
+    }
   }
 
-  // Combine scores (weight confidence more heavily)
-  return (confidenceScore * 0.7) + (landmarkScore * 0.3);
+  // Expression matching score
+  const expressionScore = calculateExpressionScore(face1, face2);
+
+  // Weighted combination of all scores
+  const confidence = (
+    confidenceScore * 0.5 + // Detection confidence weight
+    landmarkScore * 0.3 + // Landmark similarity weight
+    expressionScore * 0.2  // Expression similarity weight
+  );
+
+  return {
+    confidence,
+    details: {
+      confidenceScore,
+      landmarkScore,
+      expressionScore,
+      landmarkCount: landmarks1.length
+    }
+  };
 }
+
+function calculateExpressionScore(face1: FaceFeatures, face2: FaceFeatures): number {
+  const likelihoods = ['joyLikelihood', 'sorrowLikelihood', 'angerLikelihood', 'surpriseLikelihood'];
+  let matchCount = 0;
+  
+  for (const likelihood of likelihoods) {
+    if (face1[likelihood as keyof FaceFeatures] === face2[likelihood as keyof FaceFeatures]) {
+      matchCount++;
+    }
+  }
+  
+  return matchCount / likelihoods.length;
+}
+
