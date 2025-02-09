@@ -30,7 +30,8 @@ const Search = () => {
     const fetchAllMatches = async () => {
       const { data, error } = await supabase
         .from('matches')
-        .select('*');
+        .select('*')
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching all matches:', error);
@@ -57,11 +58,12 @@ const Search = () => {
     try {
       console.log('Searching for:', searchTerm.trim());
       
-      // Using ilike for more flexible matching
+      // Get all matches for the guest name, regardless of whether they're reference photos
       const { data: matches, error } = await supabase
         .from('matches')
         .select('*')
-        .ilike('guest_name', `%${searchTerm.trim()}%`);
+        .ilike('guest_name', `%${searchTerm.trim()}%`)
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Supabase error:', error);
@@ -75,7 +77,7 @@ const Search = () => {
       if (!matches || matches.length === 0) {
         toast({
           title: "No matches found",
-          description: `No photos were found matching "${searchTerm.trim()}". Available names: ${allMatches.map(m => m.guest_name).join(', ')}`,
+          description: `No photos were found matching "${searchTerm.trim()}". Available names: ${Array.from(new Set(allMatches.map(m => m.guest_name))).filter(Boolean).join(', ')}`,
         });
       }
     } catch (error) {
@@ -118,7 +120,7 @@ const Search = () => {
         <Card className="mb-6">
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">
-              Available names: {allMatches.map(m => m.guest_name).join(', ')}
+              Available names: {Array.from(new Set(allMatches.map(m => m.guest_name))).filter(Boolean).join(', ')}
             </p>
           </CardContent>
         </Card>
@@ -131,7 +133,7 @@ const Search = () => {
               <CardContent className="p-4">
                 <img 
                   src={match.reference_photo_url} 
-                  alt="Reference photo" 
+                  alt={`Photo of ${match.guest_name}`}
                   className="w-full h-48 object-cover rounded-md mb-4"
                 />
                 <div className="space-y-2">
