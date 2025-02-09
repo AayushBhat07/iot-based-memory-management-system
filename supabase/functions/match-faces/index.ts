@@ -20,8 +20,6 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting face matching process...');
-
     // Validate request body
     const { guestPhotoPath, photographerEventName, guestName } = await req.json() as MatchRequest;
     
@@ -29,34 +27,51 @@ serve(async (req) => {
       throw new Error('Missing required parameters');
     }
 
-    console.log('Request parameters:', { guestPhotoPath, photographerEventName, guestName });
+    console.log('Starting face matching process with parameters:', {
+      guestPhotoPath,
+      photographerEventName,
+      guestName
+    });
 
-    // Validate Supabase configuration
+    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Missing required Supabase configuration');
+      throw new Error('Missing Supabase configuration');
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Validate Google Vision credentials
+    // Get Google Vision credentials
     const credentials = Deno.env.get('GOOGLE_VISION_CREDENTIALS');
     if (!credentials) {
       throw new Error('Missing Google Vision credentials');
     }
 
+    let parsedCredentials;
     try {
-      JSON.parse(credentials);
+      parsedCredentials = JSON.parse(credentials);
+      console.log('Successfully parsed Google Vision credentials');
     } catch (e) {
+      console.error('Failed to parse Google Vision credentials:', e);
       throw new Error('Invalid Google Vision credentials format');
     }
 
+    // Initialize Google Vision client with validated credentials
     console.log('Initializing Google Vision client...');
-    const client = new vision.ImageAnnotatorClient({ 
-      credentials: JSON.parse(credentials)
+    const client = new vision.ImageAnnotatorClient({
+      credentials: parsedCredentials
     });
+
+    // Validate the guest photo exists and is accessible
+    try {
+      await client.faceDetection(guestPhotoPath);
+      console.log('Successfully validated guest photo accessibility');
+    } catch (e) {
+      console.error('Error accessing guest photo:', e);
+      throw new Error('Unable to access guest photo. Please ensure the URL is publicly accessible.');
+    }
 
     // Get reference photo face detection
     console.log('Detecting faces in reference photo:', guestPhotoPath);
@@ -206,21 +221,26 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         message: 'Processing complete',
-        guestFolder: guestFolderPath,
-        totalPhotos: guestPhotos?.length || 0
+        guestFolder: `${photographerEventName}/${guestName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+        totalPhotos: photographerPhotos.length
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error in face matching process:', error);
+    
+    // Send a more detailed error response
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        stack: error.stack, // Include stack trace for debugging
-        name: error.name
+        details: error.stack,
+        type: error.name
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
+      }
     );
   }
 });
