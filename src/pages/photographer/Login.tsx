@@ -92,7 +92,7 @@ const PhotographerLogin = () => {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-gray-900 to-black relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 relative overflow-hidden">
       {/* Floating Messages - Positioned further from the center */}
       {messages.map((message, index) => (
         <motion.div
@@ -101,7 +101,7 @@ const PhotographerLogin = () => {
           animate={{ 
             opacity: 0.9,
             y: 0,
-            x: `${(index % 2 === 0 ? -1 : 1) * (25 + index * 8)}%`,
+            x: `${(index % 2 === 0 ? -1 : 1) * (35 + index * 10)}%`,
           }}
           transition={{ 
             duration: 0.8,
@@ -109,13 +109,13 @@ const PhotographerLogin = () => {
             ease: "easeOut"
           }}
           className={`absolute ${
-            index % 2 === 0 ? 'left-1/3' : 'right-1/3'
+            index % 2 === 0 ? 'left-[40%]' : 'right-[40%]'
           } ${
-            index < 2 ? 'top-1/3' : 'bottom-1/3'
+            index < 2 ? 'top-[20%]' : 'bottom-[20%]'
           } transform -translate-x-1/2 max-w-xs
           p-6 rounded-2xl bg-white/10 backdrop-blur-lg
-          border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)]
-          hover:shadow-[0_8px_32px_rgba(31,38,135,0.15)]
+          border border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)]
+          hover:shadow-[0_8px_32px_rgba(31,38,135,0.25)]
           transition-all duration-300 hover:-translate-y-1`}
         >
           <p className="text-white/90 text-sm font-medium">{message}</p>
@@ -123,7 +123,7 @@ const PhotographerLogin = () => {
       ))}
 
       {/* Login Form */}
-      <div className="p-8 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_32px_rgba(31,38,135,0.15)] transition-all duration-300 w-full max-w-md z-10">
+      <div className="p-8 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)] hover:shadow-[0_8px_32px_rgba(31,38,135,0.25)] transition-all duration-300 w-full max-w-md z-10">
         <h2 className="text-2xl font-bold text-center mb-6 text-white">Photographer Portal</h2>
         <form onSubmit={handleSignIn} className="space-y-4">
           <div className="space-y-2">
