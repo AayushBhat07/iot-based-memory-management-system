@@ -71,9 +71,14 @@ const Search = () => {
         .from('photos')
         .select('url, metadata')
         .eq('metadata->>guest_name', searchTerm.trim())
-        .single();
+        .maybeSingle();
 
-      if (refError || !refPhotoData) {
+      if (refError) {
+        console.error('Error fetching reference photo:', refError);
+        throw refError;
+      }
+
+      if (!refPhotoData) {
         toast({
           title: "No reference photo found",
           description: `No reference photo found for "${searchTerm.trim()}". Please upload a reference photo first.`,
@@ -98,7 +103,7 @@ const Search = () => {
       }
 
       // Get the updated matches
-      const { data: matches, error } = await supabase
+      const { data: matches, error: matchesError } = await supabase
         .from('matches')
         .select(`
           *,
@@ -109,9 +114,9 @@ const Search = () => {
         .eq('guest_name', searchTerm.trim())
         .order('match_score', { ascending: false });
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
+      if (matchesError) {
+        console.error('Error fetching matches:', matchesError);
+        throw matchesError;
       }
 
       console.log('Search results:', matches);

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 import vision from 'npm:@google-cloud/vision@4.0.3'
@@ -46,33 +45,29 @@ serve(async (req) => {
 
     console.log('Starting face matching process for guest:', guestName);
 
-    // Get the reference photo with case-insensitive search and more detailed logging
-    const { data: photos, error: photoError } = await supabase
+    // Get the reference photo
+    const { data: photoRecord, error: photoError } = await supabase
       .from('photos')
       .select('url, metadata')
-      .filter('metadata->guest_name', 'ilike', guestName.trim())
-      .order('created_at', { ascending: false });
-
-    console.log('Photo query results:', { photos, photoError });
+      .eq('metadata->guest_name', guestName.trim())
+      .maybeSingle();
 
     if (photoError) {
-      console.error('Database error when fetching photos:', photoError);
+      console.error('Database error when fetching photo:', photoError);
       throw new Error(`Database error: ${photoError.message}`);
     }
 
-    if (!photos || photos.length === 0) {
-      console.error('No photos found for guest:', guestName);
+    if (!photoRecord) {
+      console.error('No photo found for guest:', guestName);
       throw new Error(`Could not find photo record for guest: ${guestName}`);
     }
 
-    // Use the most recent photo as reference
-    const guestPhotoUrl = photos[0].url;
-    console.log('Using guest photo URL:', guestPhotoUrl);
+    console.log('Found photo record:', photoRecord);
 
     // Get list of photographer photos
     const { data: photographerPhotos, error: listError } = await supabase.storage
       .from('photographer-uploads')
-      .list(photographerEventName)
+      .list(photographerEventName);
 
     if (listError) {
       console.error('Error listing photographer photos:', listError);
@@ -82,15 +77,15 @@ serve(async (req) => {
     console.log(`Found ${photographerPhotos?.length || 0} photographer photos`);
 
     // Enhanced face detection for guest photo
-    const [guestResult] = await client.faceDetection(guestPhotoUrl);
+    const [guestResult] = await client.faceDetection(photoRecord.url);
     const guestFaces = guestResult.faceAnnotations;
 
     if (!guestFaces?.length) {
-      console.error('No faces detected in guest photo:', guestPhotoUrl);
+      console.error('No faces detected in guest photo:', photoRecord.url);
       return new Response(
         JSON.stringify({ error: 'No face detected in guest photo' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      )
+      );
     }
 
     // Extract comprehensive face features for the guest
@@ -101,18 +96,18 @@ serve(async (req) => {
     let processedPhotos = 0;
 
     // Compare with each photographer photo
-    for (const photo of photographerPhotos) {
-      const { data: photographerPhotoData } = await supabase.storage
+    for (const photo of photographerPhotos || []) {
+      const { data: urlData } = await supabase.storage
         .from('photographer-uploads')
-        .createSignedUrl(`${photographerEventName}/${photo.name}`, 60)
+        .createSignedUrl(`${photographerEventName}/${photo.name}`, 60);
 
-      if (!photographerPhotoData?.signedUrl) {
+      if (!urlData?.signedUrl) {
         console.log(`Could not get signed URL for photo: ${photo.name}`);
         continue;
       }
 
       try {
-        const [photographerResult] = await client.faceDetection(photographerPhotoData.signedUrl);
+        const [photographerResult] = await client.faceDetection(urlData.signedUrl);
         const photographerFaces = photographerResult.faceAnnotations;
 
         if (!photographerFaces?.length) {
@@ -120,7 +115,7 @@ serve(async (req) => {
           continue;
         }
 
-        // Extract features for the photographer's photo
+        // Extract features for each photographer's photo
         const photographerFeatures = extractFaceFeatures(photographerFaces[0]);
         
         // Enhanced comparison using multiple criteria
@@ -128,8 +123,13 @@ serve(async (req) => {
         processedPhotos++;
 
         if (matchResult.confidence > 0.75) {
+          // Get the public URL for the photographer's photo
+          const { data: { publicUrl } } = supabase.storage
+            .from('photographer-uploads')
+            .getPublicUrl(`${photographerEventName}/${photo.name}`);
+
           const match = {
-            reference_photo_url: guestPhotoUrl,
+            reference_photo_url: photoRecord.url,
             photo_id: photo.name,
             confidence: matchResult.confidence,
             match_details: matchResult.details,
@@ -144,7 +144,10 @@ serve(async (req) => {
           // Insert each match into the database immediately
           const { error: insertError } = await supabase
             .from('matches')
-            .insert([match]);
+            .insert([{
+              ...match,
+              user_id: null // explicitly set to null for matches
+            }]);
 
           if (insertError) {
             console.error('Error inserting match:', insertError);
@@ -165,16 +168,16 @@ serve(async (req) => {
         matchCount: matches.length
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-    )
+    );
 
   } catch (error) {
     console.error('Error in face matching process:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    )
+    );
   }
-})
+});
 
 function extractFaceFeatures(face: any): FaceFeatures {
   return {
