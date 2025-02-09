@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -72,11 +72,31 @@ const ReferenceUpload = () => {
         const fileExt = file.name.split('.').pop();
         const fileName = `${sanitizedName}/${Date.now()}-${i}.${fileExt}`;
 
-        const { error } = await supabase.storage
+        // First upload to storage
+        const { error: storageError, data: storageData } = await supabase.storage
           .from('guest-reference-photos')
           .upload(fileName, file);
 
-        if (error) throw error;
+        if (storageError) throw storageError;
+
+        // Get the public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('guest-reference-photos')
+          .getPublicUrl(fileName);
+
+        // Then create a record in the photos table with metadata
+        const { error: dbError } = await supabase
+          .from('photos')
+          .insert({
+            url: publicUrl,
+            metadata: {
+              is_reference: true,
+              guest_name: guestName.trim(),
+              original_filename: file.name
+            }
+          });
+
+        if (dbError) throw dbError;
 
         const currentProgress = ((i + 1) / files.length) * 100;
         setProgress(currentProgress);
@@ -95,6 +115,7 @@ const ReferenceUpload = () => {
       if (fileInput) fileInput.value = '';
       
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: "Upload failed",
         description: "There was an error uploading your photos",
