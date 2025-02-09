@@ -36,16 +36,21 @@ const Search = () => {
 
     setLoading(true);
     try {
+      console.log('Searching for:', searchTerm.trim()); // Debug log
+
       const { data: matches, error } = await supabase
         .from('matches')
         .select('*')
-        .ilike('guest_name', `%${searchTerm.trim()}%`)
-        .order('match_score', { ascending: false });
+        .ilike('guest_name', `%${searchTerm.trim().toLowerCase()}%`);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error); // Debug log
+        throw error;
+      }
+
+      console.log('Raw matches data:', matches); // Debug log
 
       setResults(matches || []);
-      console.log('Search results:', matches); // Debug log
 
       if (!matches || matches.length === 0) {
         toast({
