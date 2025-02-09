@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -87,42 +86,34 @@ const PhotographerLogin = () => {
   const messages = [
     "Experience the Difference. Professional Photography That Shines.",
     "More Than Just Photos, We Deliver Art.",
-    "Let Us Tell Your Story Through Photography. Get in Touch!",
-    "We Didn't Just Take Pictures, We Experienced the Event With You!",
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 relative overflow-hidden">
-      {/* Floating Messages - Positioned far from the center */}
-      {messages.map((message, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ 
-            opacity: 0.9,
-            y: 0,
-            x: `${(index % 2 === 0 ? -1 : 1) * (75)}%`,
-          }}
-          transition={{ 
-            duration: 0.8,
-            delay: index * 0.2,
-            ease: "easeOut"
-          }}
-          className={`absolute ${
-            index % 2 === 0 ? 'left-1/2' : 'right-1/2'
-          } ${
-            index < 2 ? 'top-[25%]' : 'bottom-[25%]'
-          } transform -translate-x-1/2 max-w-xs
-          p-6 rounded-2xl bg-white/10 backdrop-blur-lg
-          border border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)]
-          hover:shadow-[0_8px_32px_rgba(31,38,135,0.25)]
-          transition-all duration-300 hover:-translate-y-1`}
-        >
-          <p className="text-white/90 text-sm font-medium">{message}</p>
-        </motion.div>
-      ))}
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 relative">
+      <div className="w-full max-w-6xl mx-auto mb-12 flex justify-between px-8">
+        {messages.map((message, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ 
+              opacity: 0.9,
+              y: 0,
+            }}
+            transition={{ 
+              duration: 0.8,
+              delay: index * 0.2,
+              ease: "easeOut"
+            }}
+            className="max-w-xs p-6 rounded-2xl bg-white/10 backdrop-blur-lg
+              border border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)]
+              hover:shadow-[0_8px_32px_rgba(31,38,135,0.25)]
+              transition-all duration-300 hover:-translate-y-1"
+          >
+            <p className="text-white/90 text-sm font-medium">{message}</p>
+          </motion.div>
+        ))}
+      </div>
 
-      {/* Login Form */}
       <div className="p-8 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)] hover:shadow-[0_8px_32px_rgba(31,38,135,0.25)] transition-all duration-300 w-full max-w-md z-10">
         <h2 className="text-2xl font-bold text-center mb-6 text-white">Photographer Portal</h2>
         <form onSubmit={handleSignIn} className="space-y-4">
