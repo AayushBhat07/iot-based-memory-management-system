@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { Camera, User, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -152,7 +151,7 @@ const Index = () => {
                 className="w-full group relative overflow-hidden transition-all duration-300
                           hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
               >
-                <Link to="/user/search">
+                <Link to="/user">
                   <span className="relative z-10 flex items-center justify-center">
                     Find Your Photos
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
