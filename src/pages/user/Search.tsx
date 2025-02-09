@@ -70,7 +70,9 @@ const Search = () => {
       const { data: refPhotoData, error: refError } = await supabase
         .from('photos')
         .select('url, metadata')
-        .eq('metadata->>guest_name', searchTerm.trim())
+        .ilike('metadata->>guest_name', searchTerm.trim())
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (refError) {

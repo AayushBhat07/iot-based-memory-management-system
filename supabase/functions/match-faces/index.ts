@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 import vision from 'npm:@google-cloud/vision@4.0.3'
@@ -49,7 +50,9 @@ serve(async (req) => {
     const { data: photoRecord, error: photoError } = await supabase
       .from('photos')
       .select('url, metadata')
-      .eq('metadata->guest_name', guestName.trim())
+      .ilike('metadata->>guest_name', guestName.trim())
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (photoError) {
@@ -132,7 +135,7 @@ serve(async (req) => {
             reference_photo_url: photoRecord.url,
             photo_id: photo.name,
             confidence: matchResult.confidence,
-            match_details: matchResult.details,
+            match_details: JSON.stringify(matchResult.details), // Convert to string
             guest_name: guestName,
             match_score: matchResult.confidence,
             processed_at: new Date().toISOString()
@@ -146,6 +149,7 @@ serve(async (req) => {
             .from('matches')
             .insert([{
               ...match,
+              match_details: matchResult.details, // Send as object, not string
               user_id: null // explicitly set to null for matches
             }]);
 
