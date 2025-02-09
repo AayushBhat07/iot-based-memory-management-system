@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,26 @@ const Search = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState<MatchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [allMatches, setAllMatches] = useState<MatchResult[]>([]);
   const { toast } = useToast();
+
+  // Fetch all matches once when component mounts to help with debugging
+  useEffect(() => {
+    const fetchAllMatches = async () => {
+      const { data, error } = await supabase
+        .from('matches')
+        .select('*');
+      
+      if (error) {
+        console.error('Error fetching all matches:', error);
+      } else {
+        console.log('All available matches in database:', data);
+        setAllMatches(data || []);
+      }
+    };
+
+    fetchAllMatches();
+  }, []);
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
@@ -36,30 +55,27 @@ const Search = () => {
 
     setLoading(true);
     try {
-      console.log('Searching for:', searchTerm.trim()); // Debug log
-
-      // Using textSearch for more flexible matching
+      console.log('Searching for:', searchTerm.trim());
+      
+      // Using ilike for more flexible matching
       const { data: matches, error } = await supabase
         .from('matches')
         .select('*')
-        .textSearch('guest_name', `'${searchTerm.trim()}'`, {
-          type: 'plain',
-          config: 'english'
-        });
+        .ilike('guest_name', `%${searchTerm.trim()}%`);
 
       if (error) {
-        console.error('Supabase error:', error); // Debug log
+        console.error('Supabase error:', error);
         throw error;
       }
 
-      console.log('Raw matches data:', matches); // Debug log
-
+      console.log('Search results:', matches);
+      
       setResults(matches || []);
 
       if (!matches || matches.length === 0) {
         toast({
           title: "No matches found",
-          description: "No photos were found matching your search criteria",
+          description: `No photos were found matching "${searchTerm.trim()}". Available names: ${allMatches.map(m => m.guest_name).join(', ')}`,
         });
       }
     } catch (error) {
@@ -97,6 +113,16 @@ const Search = () => {
           </div>
         </CardContent>
       </Card>
+
+      {allMatches.length > 0 && (
+        <Card className="mb-6">
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">
+              Available names: {allMatches.map(m => m.guest_name).join(', ')}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {results.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
