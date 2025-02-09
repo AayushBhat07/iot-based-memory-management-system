@@ -5,9 +5,51 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
+  // Sample photos - in a real implementation, these would come from your Supabase storage
+  const backgroundPhotos = [
+    '/placeholder.svg',
+    '/placeholder.svg',
+    '/placeholder.svg',
+    '/placeholder.svg',
+    '/placeholder.svg',
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
-      <div className="container mx-auto px-4 py-16 space-y-16">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary overflow-hidden relative">
+      {/* Floating Background Photos */}
+      <div className="absolute inset-0 -z-10">
+        {backgroundPhotos.map((photo, index) => (
+          <motion.div
+            key={index}
+            className="absolute rounded-2xl overflow-hidden shadow-lg bg-white/10 backdrop-blur-sm"
+            style={{
+              width: `${Math.random() * 100 + 150}px`,
+              height: `${Math.random() * 100 + 150}px`,
+              left: `${(index * 25) % 100}%`,
+              top: `${(index * 20) % 100}%`,
+            }}
+            animate={{
+              x: [0, Math.random() * 50 - 25],
+              y: [0, Math.random() * 50 - 25],
+              rotate: [0, Math.random() * 10 - 5],
+            }}
+            transition={{
+              duration: 10 + Math.random() * 5,
+              repeat: Infinity,
+              repeatType: "reverse",
+              ease: "easeInOut",
+            }}
+          >
+            <img
+              src={photo}
+              alt=""
+              className="w-full h-full object-cover opacity-30"
+            />
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="container mx-auto px-4 py-16 space-y-16 relative z-10">
         {/* Hero Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
