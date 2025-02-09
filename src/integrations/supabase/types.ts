@@ -101,6 +101,21 @@ export type Database = {
           },
         ]
       }
+      photographers: {
+        Row: {
+          created_at: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       photos: {
         Row: {
           created_at: string | null

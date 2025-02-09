@@ -3,22 +3,46 @@ import { motion } from "framer-motion";
 import { Camera, User, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
-  // Sample photos - in a real implementation, these would come from your Supabase storage
-  const backgroundPhotos = [
-    '/placeholder.svg',
-    '/placeholder.svg',
-    '/placeholder.svg',
-    '/placeholder.svg',
-    '/placeholder.svg',
-  ];
+  // Fetch photos from the photos table
+  const { data: backgroundPhotos = [] } = useQuery({
+    queryKey: ['background-photos'],
+    queryFn: async () => {
+      const { data: photos, error } = await supabase
+        .from('photos')
+        .select('storage_path')
+        .limit(5);
+
+      if (error) {
+        console.error('Error fetching photos:', error);
+        return [];
+      }
+
+      // Get the public URLs for each photo
+      const photosWithUrls = await Promise.all(
+        photos.map(async (photo) => {
+          const { data } = supabase.storage
+            .from('photographer-uploads')
+            .getPublicUrl(photo.storage_path);
+          return data.publicUrl;
+        })
+      );
+
+      // If no photos are found, use placeholders
+      return photosWithUrls.length > 0 
+        ? photosWithUrls 
+        : Array(5).fill('/placeholder.svg');
+    }
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary overflow-hidden relative">
       {/* Floating Background Photos */}
       <div className="absolute inset-0 -z-10">
-        {backgroundPhotos.map((photo, index) => (
+        {backgroundPhotos.map((photoUrl, index) => (
           <motion.div
             key={index}
             className="absolute rounded-2xl overflow-hidden shadow-lg bg-white/10 backdrop-blur-sm"
@@ -41,7 +65,7 @@ const Index = () => {
             }}
           >
             <img
-              src={photo}
+              src={photoUrl}
               alt=""
               className="w-full h-full object-cover opacity-30"
             />
@@ -49,8 +73,8 @@ const Index = () => {
         ))}
       </div>
 
+      {/* Hero Section */}
       <div className="container mx-auto px-4 py-16 space-y-16 relative z-10">
-        {/* Hero Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
