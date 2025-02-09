@@ -28,7 +28,7 @@ const Search = () => {
   const [allMatches, setAllMatches] = useState<MatchResult[]>([]);
   const { toast } = useToast();
 
-  // Fetch all matches once when component mounts to help with debugging
+  // Fetch all matches once when component mounts
   useEffect(() => {
     const fetchAllMatches = async () => {
       const { data, error } = await supabase
@@ -97,18 +97,11 @@ const Search = () => {
         throw matchError;
       }
 
-      // Get the updated matches after face matching is complete
+      // Get the updated matches
       const { data: matches, error } = await supabase
         .from('matches')
         .select(`
-          id,
-          match_score,
-          reference_photo_url,
-          photo_id,
-          created_at,
-          confidence,
-          match_details,
-          guest_name,
+          *,
           photos (
             url
           )

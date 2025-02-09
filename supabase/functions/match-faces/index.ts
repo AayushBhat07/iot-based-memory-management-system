@@ -39,32 +39,28 @@ serve(async (req) => {
     
     console.log('Received request with:', { guestPhotoPath, photographerEventName, guestName });
 
-    // Initialize Google Cloud Vision client with improved error handling
+    // Initialize Google Cloud Vision client
     const client = new vision.ImageAnnotatorClient({
       credentials: JSON.parse(Deno.env.get('GOOGLE_VISION_CREDENTIALS') || '{}'),
     });
 
     console.log('Starting face matching process for guest:', guestName);
 
-    // Extract the relative path by removing the storage URL prefix
-    const storageUrl = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/guest-reference-photos/`;
-    let relativePath = guestPhotoPath;
-    if (guestPhotoPath.startsWith(storageUrl)) {
-      relativePath = guestPhotoPath.substring(storageUrl.length);
-    }
-    
-    console.log('Attempting to access guest photo with relative path:', relativePath);
+    // First, try to get the photo directly from the photos table
+    const { data: photoRecord, error: photoError } = await supabase
+      .from('photos')
+      .select('url')
+      .eq('metadata->guest_name', guestName)
+      .single();
 
-    const { data: guestPhotoData, error: signedUrlError } = await supabase.storage
-      .from('guest-reference-photos')
-      .createSignedUrl(relativePath, 60);
-
-    if (signedUrlError || !guestPhotoData?.signedUrl) {
-      console.error('Error creating signed URL:', signedUrlError);
-      throw new Error(`Could not access guest photo: ${signedUrlError?.message || 'No signed URL generated'}`);
+    if (photoError || !photoRecord) {
+      console.error('Error fetching photo record:', photoError);
+      throw new Error(`Could not find photo record for guest: ${guestName}`);
     }
 
-    console.log('Successfully created signed URL for guest photo');
+    // Use the URL from the photos table
+    const guestPhotoUrl = photoRecord.url;
+    console.log('Found guest photo URL:', guestPhotoUrl);
 
     // Get list of photographer photos
     const { data: photographerPhotos, error: listError } = await supabase.storage
@@ -79,7 +75,7 @@ serve(async (req) => {
     console.log(`Found ${photographerPhotos?.length || 0} photographer photos`);
 
     // Enhanced face detection for guest photo
-    const [guestResult] = await client.faceDetection(guestPhotoData.signedUrl);
+    const [guestResult] = await client.faceDetection(guestPhotoUrl);
     const guestFaces = guestResult.faceAnnotations;
 
     if (!guestFaces?.length) {
@@ -96,7 +92,7 @@ serve(async (req) => {
     const matches = [];
     let processedPhotos = 0;
 
-    // Compare with each photographer photo with improved matching
+    // Compare with each photographer photo
     for (const photo of photographerPhotos) {
       const { data: photographerPhotoData } = await supabase.storage
         .from('photographer-uploads')
@@ -120,18 +116,28 @@ serve(async (req) => {
         const matchResult = compareGoogleVisionFaces(guestFeatures, photographerFeatures);
         processedPhotos++;
 
-        if (matchResult.confidence > 0.75) { // Increased threshold for higher accuracy
-          matches.push({
-            guest_photo_path: guestPhotoPath,
-            photographer_photo_path: `${photographerEventName}/${photo.name}`,
+        if (matchResult.confidence > 0.75) {
+          const match = {
+            reference_photo_url: guestPhotoUrl,
+            photo_id: photo.name,
             confidence: matchResult.confidence,
             match_details: matchResult.details,
             guest_name: guestName,
-            event_name: photographerEventName,
+            match_score: matchResult.confidence,
             processed_at: new Date().toISOString()
-          });
-
+          };
+          
+          matches.push(match);
           console.log(`Match found in photo ${photo.name} with confidence: ${matchResult.confidence}`);
+          
+          // Insert each match into the database immediately
+          const { error: insertError } = await supabase
+            .from('matches')
+            .insert([match]);
+
+          if (insertError) {
+            console.error('Error inserting match:', insertError);
+          }
         }
       } catch (error) {
         console.error(`Error processing photo ${photo.name}:`, error);
@@ -140,15 +146,6 @@ serve(async (req) => {
     }
 
     console.log(`Processed ${processedPhotos} photos, found ${matches.length} matches`);
-
-    // Store matches in database with additional metadata
-    if (matches.length > 0) {
-      const { error: insertError } = await supabase
-        .from('matches')
-        .insert(matches);
-
-      if (insertError) throw insertError;
-    }
 
     return new Response(
       JSON.stringify({ 
