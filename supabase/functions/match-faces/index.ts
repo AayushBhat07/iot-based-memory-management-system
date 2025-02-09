@@ -46,21 +46,28 @@ serve(async (req) => {
 
     console.log('Starting face matching process for guest:', guestName);
 
-    // First, try to get the photo directly from the photos table
-    const { data: photoRecord, error: photoError } = await supabase
+    // Get the reference photo with case-insensitive search and more detailed logging
+    const { data: photos, error: photoError } = await supabase
       .from('photos')
-      .select('url')
-      .eq('metadata->guest_name', guestName)
-      .single();
+      .select('url, metadata')
+      .filter('metadata->guest_name', 'ilike', guestName.trim())
+      .order('created_at', { ascending: false });
 
-    if (photoError || !photoRecord) {
-      console.error('Error fetching photo record:', photoError);
+    console.log('Photo query results:', { photos, photoError });
+
+    if (photoError) {
+      console.error('Database error when fetching photos:', photoError);
+      throw new Error(`Database error: ${photoError.message}`);
+    }
+
+    if (!photos || photos.length === 0) {
+      console.error('No photos found for guest:', guestName);
       throw new Error(`Could not find photo record for guest: ${guestName}`);
     }
 
-    // Use the URL from the photos table
-    const guestPhotoUrl = photoRecord.url;
-    console.log('Found guest photo URL:', guestPhotoUrl);
+    // Use the most recent photo as reference
+    const guestPhotoUrl = photos[0].url;
+    console.log('Using guest photo URL:', guestPhotoUrl);
 
     // Get list of photographer photos
     const { data: photographerPhotos, error: listError } = await supabase.storage
@@ -79,6 +86,7 @@ serve(async (req) => {
     const guestFaces = guestResult.faceAnnotations;
 
     if (!guestFaces?.length) {
+      console.error('No faces detected in guest photo:', guestPhotoUrl);
       return new Response(
         JSON.stringify({ error: 'No face detected in guest photo' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
@@ -98,7 +106,10 @@ serve(async (req) => {
         .from('photographer-uploads')
         .createSignedUrl(`${photographerEventName}/${photo.name}`, 60)
 
-      if (!photographerPhotoData?.signedUrl) continue;
+      if (!photographerPhotoData?.signedUrl) {
+        console.log(`Could not get signed URL for photo: ${photo.name}`);
+        continue;
+      }
 
       try {
         const [photographerResult] = await client.faceDetection(photographerPhotoData.signedUrl);
