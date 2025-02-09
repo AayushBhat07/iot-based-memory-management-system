@@ -105,7 +105,9 @@ export type Database = {
         Row: {
           created_at: string | null
           event_id: string | null
+          guest_folder_path: string | null
           id: string
+          is_matched: boolean | null
           metadata: Json | null
           updated_at: string | null
           url: string
@@ -113,7 +115,9 @@ export type Database = {
         Insert: {
           created_at?: string | null
           event_id?: string | null
+          guest_folder_path?: string | null
           id?: string
+          is_matched?: boolean | null
           metadata?: Json | null
           updated_at?: string | null
           url: string
@@ -121,7 +125,9 @@ export type Database = {
         Update: {
           created_at?: string | null
           event_id?: string | null
+          guest_folder_path?: string | null
           id?: string
+          is_matched?: boolean | null
           metadata?: Json | null
           updated_at?: string | null
           url?: string

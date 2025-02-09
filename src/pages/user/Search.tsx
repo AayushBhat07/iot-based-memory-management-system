@@ -18,6 +18,8 @@ interface MatchResult {
   guest_name: string | null;
   photos: {
     url: string;
+    is_matched: boolean;
+    guest_folder_path: string;
   } | null;
 }
 
@@ -28,7 +30,6 @@ const Search = () => {
   const [allMatches, setAllMatches] = useState<MatchResult[]>([]);
   const { toast } = useToast();
 
-  // Fetch all matches once when component mounts
   useEffect(() => {
     const fetchAllMatches = async () => {
       const { data, error } = await supabase
@@ -36,7 +37,9 @@ const Search = () => {
         .select(`
           *,
           photos (
-            url
+            url,
+            is_matched,
+            guest_folder_path
           )
         `)
         .order('created_at', { ascending: false });
@@ -44,7 +47,6 @@ const Search = () => {
       if (error) {
         console.error('Error fetching all matches:', error);
       } else {
-        console.log('All available matches in database:', data);
         setAllMatches(data || []);
       }
     };
@@ -64,9 +66,7 @@ const Search = () => {
 
     setLoading(true);
     try {
-      console.log('Searching for:', searchTerm.trim());
-      
-      // First, get the reference photo for this guest
+      // Get reference photo
       const { data: refPhotoData, error: refError } = await supabase
         .from('photos')
         .select('url, metadata')
@@ -75,10 +75,7 @@ const Search = () => {
         .limit(1)
         .maybeSingle();
 
-      if (refError) {
-        console.error('Error fetching reference photo:', refError);
-        throw refError;
-      }
+      if (refError) throw refError;
 
       if (!refPhotoData) {
         toast({
@@ -90,39 +87,41 @@ const Search = () => {
         return;
       }
 
-      // Call the match-faces edge function
-      const { data: matchData, error: matchError } = await supabase.functions.invoke('match-faces', {
+      // Process matching
+      const { error: matchError } = await supabase.functions.invoke('match-faces', {
         body: {
           guestPhotoPath: refPhotoData.url,
-          photographerEventName: 'test', // You might want to make this dynamic based on the event
+          photographerEventName: 'test',
           guestName: searchTerm.trim()
         }
       });
 
-      if (matchError) {
-        console.error('Face matching error:', matchError);
-        throw matchError;
-      }
+      if (matchError) throw matchError;
 
-      // Get the updated matches
+      // Get all photos from guest's folder
+      const guestFolderPath = `test/${searchTerm.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+      const { data: folderPhotos, error: folderError } = await supabase.storage
+        .from('photographer-uploads')
+        .list(guestFolderPath);
+
+      if (folderError) throw folderError;
+
+      // Get matches information
       const { data: matches, error: matchesError } = await supabase
         .from('matches')
         .select(`
           *,
           photos (
-            url
+            url,
+            is_matched,
+            guest_folder_path
           )
         `)
         .eq('guest_name', searchTerm.trim())
         .order('match_score', { ascending: false });
 
-      if (matchesError) {
-        console.error('Error fetching matches:', matchesError);
-        throw matchesError;
-      }
+      if (matchesError) throw matchesError;
 
-      console.log('Search results:', matches);
-      
       setResults(matches || []);
 
       if (!matches || matches.length === 0) {
@@ -193,10 +192,12 @@ const Search = () => {
                   </div>
                   {match.photos?.url && (
                     <div>
-                      <p className="text-sm font-medium mb-2">Matched Photo:</p>
+                      <p className="text-sm font-medium mb-2">
+                        {match.photos.is_matched ? 'Matched Photo:' : 'Similar Photo (Not Matched):'}
+                      </p>
                       <img 
                         src={match.photos.url} 
-                        alt={`Matched photo of ${match.guest_name}`}
+                        alt={`${match.photos.is_matched ? 'Matched' : 'Similar'} photo of ${match.guest_name}`}
                         className="w-full h-48 object-cover rounded-md"
                       />
                     </div>
