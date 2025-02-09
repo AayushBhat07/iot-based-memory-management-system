@@ -117,75 +117,77 @@ const PhotographerLogin = () => {
         ))}
       </div>
 
-      <div className="p-8 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)] hover:shadow-[0_8px_32px_rgba(31,38,135,0.25)] transition-all duration-300 w-full max-w-md z-10">
-        <h2 className="text-2xl font-bold text-center mb-6 text-white">Photographer Portal</h2>
-        <form onSubmit={handleSignIn} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-white">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-white">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="bg-white/10 border-white/20 text-white"
-            />
-          </div>
-          <div className="space-y-2">
-            <Button
-              type="submit"
-              className="w-full bg-white/20 hover:bg-white/30 text-white"
-              disabled={isLoading}
-            >
-              {isLoading ? "Loading..." : "Sign In"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full border-white/20 text-white hover:bg-white/10"
-              onClick={handleSignUp}
-              disabled={isLoading}
-            >
-              Sign Up
-            </Button>
-          </div>
-        </form>
-      </div>
+      <div className="flex items-start gap-8">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 0.9, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="max-w-xs p-6 rounded-2xl bg-white/10 backdrop-blur-lg
+            border border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)]
+            hover:shadow-[0_8px_32px_rgba(31,38,135,0.25)]
+            transition-all duration-300 hover:-translate-x-1"
+        >
+          <p className="text-white/90 text-sm font-medium">{messages[2]}</p>
+        </motion.div>
 
-      <div className="w-full max-w-6xl mx-auto mt-12 flex justify-between px-8">
-        {messages.slice(2, 4).map((message, index) => (
-          <motion.div
-            key={index + 2}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ 
-              opacity: 0.9,
-              y: 0,
-            }}
-            transition={{ 
-              duration: 0.8,
-              delay: (index + 2) * 0.2,
-              ease: "easeOut"
-            }}
-            className="max-w-xs p-6 rounded-2xl bg-white/10 backdrop-blur-lg
-              border border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)]
-              hover:shadow-[0_8px_32px_rgba(31,38,135,0.25)]
-              transition-all duration-300 hover:-translate-y-1"
-          >
-            <p className="text-white/90 text-sm font-medium">{message}</p>
-          </motion.div>
-        ))}
+        <div className="p-8 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)] hover:shadow-[0_8px_32px_rgba(31,38,135,0.25)] transition-all duration-300 w-full max-w-md z-10">
+          <h2 className="text-2xl font-bold text-center mb-6 text-white">Photographer Portal</h2>
+          <form onSubmit={handleSignIn} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-white">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-white">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="bg-white/10 border-white/20 text-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Button
+                type="submit"
+                className="w-full bg-white/20 hover:bg-white/30 text-white"
+                disabled={isLoading}
+              >
+                {isLoading ? "Loading..." : "Sign In"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-white/20 text-white hover:bg-white/10"
+                onClick={handleSignUp}
+                disabled={isLoading}
+              >
+                Sign Up
+              </Button>
+            </div>
+          </form>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 0.9, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="max-w-xs p-6 rounded-2xl bg-white/10 backdrop-blur-lg
+            border border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)]
+            hover:shadow-[0_8px_32px_rgba(31,38,135,0.25)]
+            transition-all duration-300 hover:translate-x-1"
+        >
+          <p className="text-white/90 text-sm font-medium">{messages[3]}</p>
+        </motion.div>
       </div>
     </div>
   );
