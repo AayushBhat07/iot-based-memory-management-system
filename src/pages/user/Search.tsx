@@ -66,7 +66,38 @@ const Search = () => {
     try {
       console.log('Searching for:', searchTerm.trim());
       
-      // Get all matches for the guest name, ordered by match score (highest first)
+      // First, get the reference photo for this guest
+      const { data: refPhotoData, error: refError } = await supabase
+        .from('photos')
+        .select('url, metadata')
+        .eq('metadata->>guest_name', searchTerm.trim())
+        .single();
+
+      if (refError || !refPhotoData) {
+        toast({
+          title: "No reference photo found",
+          description: `No reference photo found for "${searchTerm.trim()}". Please upload a reference photo first.`,
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Call the match-faces edge function
+      const { data: matchData, error: matchError } = await supabase.functions.invoke('match-faces', {
+        body: {
+          guestPhotoPath: refPhotoData.url,
+          photographerEventName: 'test', // You might want to make this dynamic based on the event
+          guestName: searchTerm.trim()
+        }
+      });
+
+      if (matchError) {
+        console.error('Face matching error:', matchError);
+        throw matchError;
+      }
+
+      // Get the updated matches after face matching is complete
       const { data: matches, error } = await supabase
         .from('matches')
         .select(`
@@ -82,7 +113,7 @@ const Search = () => {
             url
           )
         `)
-        .ilike('guest_name', `%${searchTerm.trim()}%`)
+        .eq('guest_name', searchTerm.trim())
         .order('match_score', { ascending: false });
 
       if (error) {
