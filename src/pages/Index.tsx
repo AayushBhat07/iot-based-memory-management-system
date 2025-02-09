@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { Camera, User, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -13,27 +12,16 @@ const Index = () => {
     queryFn: async () => {
       const { data: photos, error } = await supabase
         .from('photos')
-        .select('storage_path')
+        .select('url')
         .limit(5);
 
       if (error) {
         console.error('Error fetching photos:', error);
-        return [];
+        return Array(5).fill('/placeholder.svg');
       }
 
-      // Get the public URLs for each photo
-      const photosWithUrls = await Promise.all(
-        photos.map(async (photo) => {
-          const { data } = supabase.storage
-            .from('photographer-uploads')
-            .getPublicUrl(photo.storage_path);
-          return data.publicUrl;
-        })
-      );
-
-      // If no photos are found, use placeholders
-      return photosWithUrls.length > 0 
-        ? photosWithUrls 
+      return photos?.length > 0 
+        ? photos.map(photo => photo.url)
         : Array(5).fill('/placeholder.svg');
     }
   });
