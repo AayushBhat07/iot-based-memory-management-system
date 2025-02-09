@@ -89,12 +89,13 @@ const ReferenceUpload = () => {
           .from('photos')
           .insert({
             url: publicUrl,
+            event_id: null,
             metadata: {
               is_reference: true,
               guest_name: guestName.trim(),
-              original_filename: file.name
-            },
-            event_id: null // Now we can explicitly set this to null
+              original_filename: file.name,
+              uploaded_by: null // explicitly set to null for reference photos
+            }
           });
 
         if (dbError) throw dbError;
