@@ -59,23 +59,26 @@ const PhotographerLogin = () => {
       });
 
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error signing up",
-          description: error.message,
-        });
+        // Special handling for already registered users
+        if (error.message.includes("already registered") || error.message.includes("already exists")) {
+          toast({
+            variant: "destructive",
+            title: "Account already exists",
+            description: "Please sign in instead of signing up.",
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Error signing up",
+            description: error.message,
+          });
+        }
       } else {
         toast({
           title: "Sign up successful",
           description: "Please check your email for verification.",
         });
       }
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "An unexpected error occurred",
-      });
     } finally {
       setIsLoading(false);
     }
