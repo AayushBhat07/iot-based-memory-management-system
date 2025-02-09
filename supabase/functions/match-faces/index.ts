@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 import vision from 'npm:@google-cloud/vision@4.0.3'
@@ -36,6 +35,8 @@ serve(async (req) => {
     )
 
     const { guestPhotoPath, photographerEventName, guestName } = await req.json() as MatchRequest
+    
+    console.log('Received request with:', { guestPhotoPath, photographerEventName, guestName });
 
     // Initialize Google Cloud Vision client with improved error handling
     const client = new vision.ImageAnnotatorClient({
@@ -44,13 +45,22 @@ serve(async (req) => {
 
     console.log('Starting face matching process for guest:', guestName);
 
-    const { data: guestPhotoData } = await supabase.storage
-      .from('guest-reference-photos')
-      .createSignedUrl(guestPhotoPath, 60)
+    // Extract just the filename from the full path if it contains the bucket name
+    const photoPathParts = guestPhotoPath.split('/');
+    const fileName = photoPathParts[photoPathParts.length - 1];
+    
+    console.log('Attempting to access guest photo with path:', fileName);
 
-    if (!guestPhotoData?.signedUrl) {
-      throw new Error('Could not access guest photo')
+    const { data: guestPhotoData, error: signedUrlError } = await supabase.storage
+      .from('guest-reference-photos')
+      .createSignedUrl(fileName, 60);
+
+    if (signedUrlError || !guestPhotoData?.signedUrl) {
+      console.error('Error creating signed URL:', signedUrlError);
+      throw new Error(`Could not access guest photo: ${signedUrlError?.message || 'No signed URL generated'}`);
     }
+
+    console.log('Successfully created signed URL for guest photo');
 
     // Get list of photographer photos
     const { data: photographerPhotos, error: listError } = await supabase.storage
@@ -58,8 +68,11 @@ serve(async (req) => {
       .list(photographerEventName)
 
     if (listError) {
-      throw listError
+      console.error('Error listing photographer photos:', listError);
+      throw listError;
     }
+
+    console.log(`Found ${photographerPhotos?.length || 0} photographer photos`);
 
     // Enhanced face detection for guest photo
     const [guestResult] = await client.faceDetection(guestPhotoData.signedUrl);
