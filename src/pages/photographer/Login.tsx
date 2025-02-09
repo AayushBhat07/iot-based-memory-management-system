@@ -93,7 +93,7 @@ const PhotographerLogin = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 relative overflow-hidden">
-      {/* Floating Messages - Positioned further from the center */}
+      {/* Floating Messages - Positioned far from the center */}
       {messages.map((message, index) => (
         <motion.div
           key={index}
@@ -101,7 +101,7 @@ const PhotographerLogin = () => {
           animate={{ 
             opacity: 0.9,
             y: 0,
-            x: `${(index % 2 === 0 ? -1 : 1) * (35 + index * 10)}%`,
+            x: `${(index % 2 === 0 ? -1 : 1) * (75)}%`,
           }}
           transition={{ 
             duration: 0.8,
@@ -109,9 +109,9 @@ const PhotographerLogin = () => {
             ease: "easeOut"
           }}
           className={`absolute ${
-            index % 2 === 0 ? 'left-[40%]' : 'right-[40%]'
+            index % 2 === 0 ? 'left-1/2' : 'right-1/2'
           } ${
-            index < 2 ? 'top-[20%]' : 'bottom-[20%]'
+            index < 2 ? 'top-[25%]' : 'bottom-[25%]'
           } transform -translate-x-1/2 max-w-xs
           p-6 rounded-2xl bg-white/10 backdrop-blur-lg
           border border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)]
