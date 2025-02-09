@@ -16,6 +16,9 @@ interface MatchResult {
   confidence: number | null;
   match_details: any;
   guest_name: string | null;
+  photos: {
+    url: string;
+  } | null;
 }
 
 const Search = () => {
