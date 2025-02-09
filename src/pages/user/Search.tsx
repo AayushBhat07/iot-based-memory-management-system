@@ -38,10 +38,14 @@ const Search = () => {
     try {
       console.log('Searching for:', searchTerm.trim()); // Debug log
 
+      // Using textSearch for more flexible matching
       const { data: matches, error } = await supabase
         .from('matches')
         .select('*')
-        .ilike('guest_name', `%${searchTerm.trim().toLowerCase()}%`);
+        .textSearch('guest_name', `'${searchTerm.trim()}'`, {
+          type: 'plain',
+          config: 'english'
+        });
 
       if (error) {
         console.error('Supabase error:', error); // Debug log
