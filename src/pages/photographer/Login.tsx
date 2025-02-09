@@ -93,7 +93,7 @@ const PhotographerLogin = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-gray-900 to-black relative overflow-hidden">
-      {/* Floating Messages */}
+      {/* Floating Messages - Positioned further from the center */}
       {messages.map((message, index) => (
         <motion.div
           key={index}
@@ -101,7 +101,7 @@ const PhotographerLogin = () => {
           animate={{ 
             opacity: 0.9,
             y: 0,
-            x: `${(index % 2 === 0 ? -1 : 1) * (15 + index * 5)}%`,
+            x: `${(index % 2 === 0 ? -1 : 1) * (25 + index * 8)}%`,
           }}
           transition={{ 
             duration: 0.8,
@@ -109,9 +109,9 @@ const PhotographerLogin = () => {
             ease: "easeOut"
           }}
           className={`absolute ${
-            index % 2 === 0 ? 'left-1/4' : 'right-1/4'
+            index % 2 === 0 ? 'left-1/3' : 'right-1/3'
           } ${
-            index < 2 ? 'top-1/4' : 'bottom-1/4'
+            index < 2 ? 'top-1/3' : 'bottom-1/3'
           } transform -translate-x-1/2 max-w-xs
           p-6 rounded-2xl bg-white/10 backdrop-blur-lg
           border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)]
