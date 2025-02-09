@@ -159,7 +159,7 @@ const PhotographerLogin = () => {
             <div className="space-y-2">
               <Button
                 type="submit"
-                className="w-full bg-white/20 hover:bg-white/30 text-white"
+                className="w-full bg-white/20 hover:bg-white/30 text-[#F97316]"
                 disabled={isLoading}
               >
                 {isLoading ? "Loading..." : "Sign In"}
@@ -167,7 +167,7 @@ const PhotographerLogin = () => {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full border-white/20 text-white hover:bg-white/10"
+                className="w-full border-white/20 text-[#F97316] hover:bg-white/10"
                 onClick={handleSignUp}
                 disabled={isLoading}
               >
