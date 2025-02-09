@@ -58,12 +58,24 @@ const Search = () => {
     try {
       console.log('Searching for:', searchTerm.trim());
       
-      // Get all matches for the guest name, regardless of whether they're reference photos
+      // Get all matches for the guest name, ordered by match score (highest first)
       const { data: matches, error } = await supabase
         .from('matches')
-        .select('*')
+        .select(`
+          id,
+          match_score,
+          reference_photo_url,
+          photo_id,
+          created_at,
+          confidence,
+          match_details,
+          guest_name,
+          photos (
+            url
+          )
+        `)
         .ilike('guest_name', `%${searchTerm.trim()}%`)
-        .order('created_at', { ascending: false });
+        .order('match_score', { ascending: false });
 
       if (error) {
         console.error('Supabase error:', error);
@@ -96,7 +108,7 @@ const Search = () => {
     <div className="container mx-auto p-4">
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Search Reference Photos</CardTitle>
+          <CardTitle>Search Photos</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex gap-2">
@@ -131,22 +143,37 @@ const Search = () => {
           {results.map((match) => (
             <Card key={match.id} className="overflow-hidden">
               <CardContent className="p-4">
-                <img 
-                  src={match.reference_photo_url} 
-                  alt={`Photo of ${match.guest_name}`}
-                  className="w-full h-48 object-cover rounded-md mb-4"
-                />
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Guest Name: {match.guest_name}</p>
-                  <p className="text-sm font-medium">Match Score: {(match.match_score * 100).toFixed(1)}%</p>
-                  {match.confidence && (
-                    <p className="text-sm text-muted-foreground">
-                      Confidence: {(match.confidence * 100).toFixed(1)}%
-                    </p>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-medium mb-2">Reference Photo:</p>
+                    <img 
+                      src={match.reference_photo_url} 
+                      alt={`Reference photo of ${match.guest_name}`}
+                      className="w-full h-48 object-cover rounded-md"
+                    />
+                  </div>
+                  {match.photos?.url && (
+                    <div>
+                      <p className="text-sm font-medium mb-2">Matched Photo:</p>
+                      <img 
+                        src={match.photos.url} 
+                        alt={`Matched photo of ${match.guest_name}`}
+                        className="w-full h-48 object-cover rounded-md"
+                      />
+                    </div>
                   )}
-                  <p className="text-xs text-muted-foreground">
-                    Found on: {new Date(match.created_at || '').toLocaleDateString()}
-                  </p>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Guest Name: {match.guest_name}</p>
+                    <p className="text-sm font-medium">Match Score: {(match.match_score * 100).toFixed(1)}%</p>
+                    {match.confidence && (
+                      <p className="text-sm text-muted-foreground">
+                        Confidence: {(match.confidence * 100).toFixed(1)}%
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Found on: {new Date(match.created_at || '').toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
