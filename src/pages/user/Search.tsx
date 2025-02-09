@@ -15,6 +15,7 @@ interface MatchResult {
   created_at: string;
   confidence: number | null;
   match_details: any;
+  guest_name: string | null;
 }
 
 const Search = () => {
@@ -35,16 +36,16 @@ const Search = () => {
 
     setLoading(true);
     try {
-      const sanitizedSearch = searchTerm.trim().replace(/[^a-zA-Z0-9]/g, '_');
       const { data: matches, error } = await supabase
         .from('matches')
         .select('*')
-        .ilike('reference_photo_url', `%${sanitizedSearch}%`)
+        .ilike('guest_name', `%${searchTerm.trim()}%`)
         .order('match_score', { ascending: false });
 
       if (error) throw error;
 
       setResults(matches || []);
+      console.log('Search results:', matches); // Debug log
 
       if (!matches || matches.length === 0) {
         toast({
@@ -99,6 +100,7 @@ const Search = () => {
                   className="w-full h-48 object-cover rounded-md mb-4"
                 />
                 <div className="space-y-2">
+                  <p className="text-sm font-medium">Guest Name: {match.guest_name}</p>
                   <p className="text-sm font-medium">Match Score: {(match.match_score * 100).toFixed(1)}%</p>
                   {match.confidence && (
                     <p className="text-sm text-muted-foreground">

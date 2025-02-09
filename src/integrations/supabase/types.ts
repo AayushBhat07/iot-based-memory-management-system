@@ -51,6 +51,7 @@ export type Database = {
         Row: {
           confidence: number | null
           created_at: string | null
+          guest_name: string | null
           id: string
           match_details: Json | null
           match_score: number
@@ -62,6 +63,7 @@ export type Database = {
         Insert: {
           confidence?: number | null
           created_at?: string | null
+          guest_name?: string | null
           id?: string
           match_details?: Json | null
           match_score: number
@@ -73,6 +75,7 @@ export type Database = {
         Update: {
           confidence?: number | null
           created_at?: string | null
+          guest_name?: string | null
           id?: string
           match_details?: Json | null
           match_score?: number
