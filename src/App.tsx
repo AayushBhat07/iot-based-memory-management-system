@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PhotographerUpload from "./pages/photographer/Upload";
 import PhotographerLogin from "./pages/photographer/Login";
+import ReferenceUpload from "./pages/user/ReferenceUpload";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/photographer/upload" element={<PhotographerUpload />} />
           <Route path="/photographer/login" element={<PhotographerLogin />} />
+          <Route path="/user/reference-upload" element={<ReferenceUpload />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
