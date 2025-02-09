@@ -93,7 +93,8 @@ const ReferenceUpload = () => {
               is_reference: true,
               guest_name: guestName.trim(),
               original_filename: file.name
-            }
+            },
+            event_id: null // Now we can explicitly set this to null
           });
 
         if (dbError) throw dbError;

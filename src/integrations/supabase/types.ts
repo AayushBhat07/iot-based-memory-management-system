@@ -104,7 +104,7 @@ export type Database = {
       photos: {
         Row: {
           created_at: string | null
-          event_id: string
+          event_id: string | null
           id: string
           metadata: Json | null
           updated_at: string | null
@@ -112,7 +112,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
-          event_id: string
+          event_id?: string | null
           id?: string
           metadata?: Json | null
           updated_at?: string | null
@@ -120,7 +120,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
-          event_id?: string
+          event_id?: string | null
           id?: string
           metadata?: Json | null
           updated_at?: string | null
