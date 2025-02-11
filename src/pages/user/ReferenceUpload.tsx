@@ -86,17 +86,19 @@ const ReferenceUpload = () => {
           .from('guest-reference-photos')
           .getPublicUrl(fileName);
 
-        // Then create a record in the photos table with metadata
+        // Then create a record in the media table
         const { error: dbError } = await supabase
-          .from('photos')
+          .from('media')
           .insert({
             url: publicUrl,
-            event_id: null,
+            media_type: 'image',
+            filename: file.name,
+            mime_type: file.type,
+            size: file.size,
             metadata: {
               is_reference: true,
               guest_name: guestName.trim(),
-              original_filename: file.name,
-              uploaded_by: null
+              original_filename: file.name
             }
           });
 
