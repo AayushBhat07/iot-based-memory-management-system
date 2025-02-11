@@ -13,7 +13,7 @@ import {
   TableCaption,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Calendar, Plus, Upload } from "lucide-react";
+import { Calendar, Plus, Upload, Image as ImageIcon, Video } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -31,12 +32,22 @@ import {
 
 type Event = Tables<"events">;
 
+interface UploadingFile {
+  file: File;
+  progress: number;
+  status: 'uploading' | 'completed' | 'error';
+}
+
 const PhotographerEvents = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [files, setFiles] = useState<FileList | null>(null);
+  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [newEvent, setNewEvent] = useState({
     name: "",
     location: "",
@@ -108,8 +119,8 @@ const PhotographerEvents = () => {
         .select()
         .single();
 
-      if (eventError || !eventData) {
-        throw eventError || new Error("Failed to create event");
+      if (eventError) {
+        throw eventError;
       }
 
       toast({
@@ -125,8 +136,7 @@ const PhotographerEvents = () => {
         type: "custom",
       });
       
-      // Navigate to upload page for the new event
-      navigate(`/photographer/upload/${eventData.id}`);
+      fetchEvents(); // Refresh the events list
       
     } catch (error) {
       console.error("Error creating event:", error);
@@ -135,6 +145,117 @@ const PhotographerEvents = () => {
         description: error instanceof Error ? error.message : "Failed to create event",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!files || files.length === 0 || !selectedEvent) {
+      toast({
+        title: "No files selected",
+        description: "Please select files to upload",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const filesToUpload: UploadingFile[] = Array.from(files).map(file => ({
+      file,
+      progress: 0,
+      status: 'uploading'
+    }));
+    setUploadingFiles(filesToUpload);
+
+    for (let i = 0; i < filesToUpload.length; i++) {
+      const file = filesToUpload[i].file;
+      try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !sessionData.session) {
+          throw new Error("You must be logged in to upload files");
+        }
+
+        const mediaType = file.type.startsWith('image/') ? 'image' : 
+                       file.type.startsWith('video/') ? 'video' : null;
+
+        if (!mediaType) {
+          throw new Error(`Unsupported file type: ${file.type}`);
+        }
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${selectedEvent.id}/${Date.now()}-${i}.${fileExt}`;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('event-media')
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('event-media')
+          .getPublicUrl(fileName);
+
+        const { error: mediaError } = await supabase
+          .from('media')
+          .insert({
+            event_id: selectedEvent.id,
+            url: publicUrlData.publicUrl,
+            media_type: mediaType,
+            filename: file.name,
+            size: file.size,
+            mime_type: file.type,
+            metadata: {
+              originalName: file.name,
+              uploadedBy: sessionData.session.user.id
+            }
+          });
+
+        if (mediaError) {
+          throw mediaError;
+        }
+
+        setUploadingFiles(prev => prev.map((item, index) => 
+          index === i ? { ...item, progress: 100, status: 'completed' } : item
+        ));
+
+      } catch (error) {
+        console.error(`Error uploading file ${file.name}:`, error);
+        setUploadingFiles(prev => prev.map((item, index) => 
+          index === i ? { ...item, status: 'error' } : item
+        ));
+
+        toast({
+          title: "Upload Error",
+          description: `Failed to upload ${file.name}`,
+          variant: "destructive",
+        });
+      }
+    }
+
+    const successfulUploads = uploadingFiles.filter(f => f.status === 'completed').length;
+    if (successfulUploads > 0) {
+      toast({
+        title: "Upload Complete",
+        description: `Successfully uploaded ${successfulUploads} files`,
+      });
+      setFiles(null);
+      setUploadingFiles([]);
+    }
+  };
+
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setIsUploadModalOpen(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFiles(e.target.files);
+      setUploadingFiles([]);
     }
   };
 
@@ -295,14 +416,21 @@ const PhotographerEvents = () => {
                   filteredEvents.map((event) => (
                     <TableRow key={event.id} className="hover:bg-muted/50">
                       <TableCell className="font-medium">{formatDate(event.date)}</TableCell>
-                      <TableCell>{event.name}</TableCell>
+                      <TableCell>
+                        <button
+                          onClick={() => handleEventClick(event)}
+                          className="text-left hover:text-primary transition-colors"
+                        >
+                          {event.name}
+                        </button>
+                      </TableCell>
                       <TableCell>{event.location}</TableCell>
                       <TableCell className="capitalize">{event.type?.replace('_', ' ')}</TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => navigate(`/photographer/upload/${event.id}`)}
+                          onClick={() => handleEventClick(event)}
                         >
                           <Upload className="w-4 h-4 mr-2" />
                           Upload Media
@@ -316,6 +444,80 @@ const PhotographerEvents = () => {
           </div>
         )}
       </div>
+
+      {/* Upload Modal */}
+      <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Upload Media - {selectedEvent?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center justify-center w-full">
+              <label
+                htmlFor="file-upload"
+                className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <Upload className="w-12 h-12 mb-4 text-primary" />
+                  <p className="mb-2 text-sm text-muted-foreground">
+                    <span className="font-semibold">Click to upload</span> or drag and drop
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Images (JPG, PNG) and Videos (MP4, MOV)
+                  </p>
+                </div>
+                <input
+                  id="file-upload"
+                  type="file"
+                  className="hidden"
+                  multiple
+                  accept="image/*,video/*"
+                  onChange={handleFileChange}
+                  disabled={uploadingFiles.some(f => f.status === 'uploading')}
+                />
+              </label>
+            </div>
+
+            {files && files.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-primary" />
+                  <span>{files.length} files selected</span>
+                </div>
+                
+                {uploadingFiles.map((file, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="truncate">{file.file.name}</span>
+                      <span className={cn(
+                        "text-xs",
+                        file.status === 'completed' ? "text-green-500" :
+                        file.status === 'error' ? "text-red-500" :
+                        "text-muted-foreground"
+                      )}>
+                        {file.status === 'completed' ? 'Completed' :
+                         file.status === 'error' ? 'Failed' :
+                         'Uploading...'}
+                      </span>
+                    </div>
+                    <Progress value={file.progress} />
+                  </div>
+                ))}
+
+                <Button
+                  onClick={handleUpload}
+                  disabled={uploadingFiles.some(f => f.status === 'uploading')}
+                  className="w-full"
+                >
+                  {uploadingFiles.some(f => f.status === 'uploading')
+                    ? "Uploading..."
+                    : "Upload Files"}
+                </Button>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
