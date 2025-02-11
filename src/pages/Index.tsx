@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { Camera, User, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -6,23 +7,22 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
-  // Fetch media items from the media table
-  const { data: backgroundMedia = [] } = useQuery({
-    queryKey: ['background-media'],
+  // Fetch photos from the photos table
+  const { data: backgroundPhotos = [] } = useQuery({
+    queryKey: ['background-photos'],
     queryFn: async () => {
-      const { data: media, error } = await supabase
-        .from('media')
+      const { data: photos, error } = await supabase
+        .from('photos')
         .select('url')
-        .eq('media_type', 'image')
         .limit(5);
 
       if (error) {
-        console.error('Error fetching media:', error);
+        console.error('Error fetching photos:', error);
         return Array(5).fill('/placeholder.svg');
       }
 
-      return media?.length > 0 
-        ? media.map(item => item.url)
+      return photos?.length > 0 
+        ? photos.map(photo => photo.url)
         : Array(5).fill('/placeholder.svg');
     }
   });
@@ -31,7 +31,7 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary overflow-hidden relative">
       {/* Floating Background Photos */}
       <div className="absolute inset-0 -z-10">
-        {backgroundMedia.map((photoUrl, index) => (
+        {backgroundPhotos.map((photoUrl, index) => (
           <motion.div
             key={index}
             className="absolute rounded-2xl overflow-hidden shadow-lg bg-white/10 backdrop-blur-sm"

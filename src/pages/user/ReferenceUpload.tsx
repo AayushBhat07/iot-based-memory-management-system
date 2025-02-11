@@ -6,7 +6,6 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
 import { Upload, Image as ImageIcon, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 
 const ReferenceUpload = () => {
   const [files, setFiles] = useState<File[]>([]);
@@ -14,7 +13,6 @@ const ReferenceUpload = () => {
   const [progress, setProgress] = useState(0);
   const [guestName, setGuestName] = useState("");
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -86,19 +84,17 @@ const ReferenceUpload = () => {
           .from('guest-reference-photos')
           .getPublicUrl(fileName);
 
-        // Then create a record in the media table
+        // Then create a record in the photos table with metadata
         const { error: dbError } = await supabase
-          .from('media')
+          .from('photos')
           .insert({
             url: publicUrl,
-            media_type: 'image',
-            filename: file.name,
-            mime_type: file.type,
-            size: file.size,
+            event_id: null,
             metadata: {
               is_reference: true,
               guest_name: guestName.trim(),
-              original_filename: file.name
+              original_filename: file.name,
+              uploaded_by: null // explicitly set to null for reference photos
             }
           });
 
@@ -119,9 +115,6 @@ const ReferenceUpload = () => {
       setProgress(0);
       const fileInput = document.getElementById('file-upload') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
-      
-      // Navigate to success page
-      navigate('/user/upload-success');
       
     } catch (error) {
       console.error('Upload error:', error);

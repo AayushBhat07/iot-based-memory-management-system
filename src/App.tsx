@@ -8,10 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PhotographerUpload from "./pages/photographer/Upload";
 import PhotographerLogin from "./pages/photographer/Login";
-import PhotographerOptions from "./pages/photographer/Options";
-import PhotographerEvents from "./pages/photographer/Events";
 import ReferenceUpload from "./pages/user/ReferenceUpload";
-import UploadSuccess from "./pages/user/UploadSuccess";
 import Search from "./pages/user/Search";
 import UserOptions from "./pages/user/Options";
 
@@ -25,13 +22,10 @@ const App = () => (
         <Sonner />
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/photographer/upload" element={<PhotographerUpload />} />
           <Route path="/photographer/login" element={<PhotographerLogin />} />
-          <Route path="/photographer/options" element={<PhotographerOptions />} />
-          <Route path="/photographer/events" element={<PhotographerEvents />} />
-          <Route path="/photographer/upload/:eventId" element={<PhotographerUpload />} />
           <Route path="/user" element={<UserOptions />} />
           <Route path="/user/reference-upload" element={<ReferenceUpload />} />
-          <Route path="/user/upload-success" element={<UploadSuccess />} />
           <Route path="/user/search" element={<Search />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

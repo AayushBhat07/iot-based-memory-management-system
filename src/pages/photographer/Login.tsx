@@ -36,7 +36,7 @@ const PhotographerLogin = () => {
           title: "Signed in successfully",
           description: "Welcome back!",
         });
-        navigate("/photographer/options");
+        navigate("/photographer/upload");
       }
     } catch (error) {
       toast({
@@ -92,7 +92,7 @@ const PhotographerLogin = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 via-primary/10 to-secondary relative">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 relative">
       <div className="w-full max-w-6xl mx-auto mb-12 flex justify-between px-8">
         {messages.slice(0, 2).map((message, index) => (
           <motion.div
@@ -107,9 +107,12 @@ const PhotographerLogin = () => {
               delay: index * 0.2,
               ease: "easeOut"
             }}
-            className="max-w-xs p-6 glass-card rounded-2xl"
+            className="max-w-xs p-6 rounded-2xl bg-white/10 backdrop-blur-lg
+              border border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)]
+              hover:shadow-[0_8px_32px_rgba(31,38,135,0.25)]
+              transition-all duration-300 hover:-translate-y-1"
           >
-            <p className="text-primary/90 text-sm font-medium">{message}</p>
+            <p className="text-white/90 text-sm font-medium">{message}</p>
           </motion.div>
         ))}
       </div>
@@ -119,16 +122,19 @@ const PhotographerLogin = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 0.9, x: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="max-w-xs p-6 glass-card rounded-2xl"
+          className="max-w-xs p-6 rounded-2xl bg-white/10 backdrop-blur-lg
+            border border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)]
+            hover:shadow-[0_8px_32px_rgba(31,38,135,0.25)]
+            transition-all duration-300 hover:-translate-x-1"
         >
-          <p className="text-primary/90 text-sm font-medium">{messages[2]}</p>
+          <p className="text-white/90 text-sm font-medium">{messages[2]}</p>
         </motion.div>
 
-        <div className="glass-card p-8 rounded-2xl w-full max-w-md z-10">
-          <h2 className="text-2xl font-bold text-center mb-6 text-primary">Photographer Portal</h2>
+        <div className="p-8 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)] hover:shadow-[0_8px_32px_rgba(31,38,135,0.25)] transition-all duration-300 w-full max-w-md z-10">
+          <h2 className="text-2xl font-bold text-center mb-6 text-white">Photographer Portal</h2>
           <form onSubmit={handleSignIn} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-white">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -136,24 +142,24 @@ const PhotographerLogin = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-white/50"
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-white">Password</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-white/50"
+                className="bg-white/10 border-white/20 text-white"
               />
             </div>
             <div className="space-y-2">
               <Button
                 type="submit"
-                className="w-full bg-primary/90 hover:bg-primary"
+                className="w-full bg-white/20 hover:bg-white/30 text-white"
                 disabled={isLoading}
               >
                 {isLoading ? "Loading..." : "Sign In"}
@@ -161,7 +167,7 @@ const PhotographerLogin = () => {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full border-primary/20 hover:bg-primary/10"
+                className="w-full border-white/20 text-white hover:bg-white/10"
                 onClick={handleSignUp}
                 disabled={isLoading}
               >
@@ -175,9 +181,12 @@ const PhotographerLogin = () => {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 0.9, x: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="max-w-xs p-6 glass-card rounded-2xl"
+          className="max-w-xs p-6 rounded-2xl bg-white/10 backdrop-blur-lg
+            border border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)]
+            hover:shadow-[0_8px_32px_rgba(31,38,135,0.25)]
+            transition-all duration-300 hover:translate-x-1"
         >
-          <p className="text-primary/90 text-sm font-medium">{messages[3]}</p>
+          <p className="text-white/90 text-sm font-medium">{messages[3]}</p>
         </motion.div>
       </div>
     </div>

@@ -9,42 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      event_photographers: {
-        Row: {
-          added_at: string | null
-          event_id: string | null
-          id: string
-          photographer_id: string | null
-        }
-        Insert: {
-          added_at?: string | null
-          event_id?: string | null
-          id?: string
-          photographer_id?: string | null
-        }
-        Update: {
-          added_at?: string | null
-          event_id?: string | null
-          id?: string
-          photographer_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "event_photographers_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "event_photographers_photographer_id_fkey"
-            columns: ["photographer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       events: {
         Row: {
           created_at: string | null
@@ -53,7 +17,6 @@ export type Database = {
           location: string
           name: string
           photographer_id: string
-          type: Database["public"]["Enums"]["event_type"] | null
           updated_at: string | null
         }
         Insert: {
@@ -63,7 +26,6 @@ export type Database = {
           location: string
           name: string
           photographer_id: string
-          type?: Database["public"]["Enums"]["event_type"] | null
           updated_at?: string | null
         }
         Update: {
@@ -73,7 +35,6 @@ export type Database = {
           location?: string
           name?: string
           photographer_id?: string
-          type?: Database["public"]["Enums"]["event_type"] | null
           updated_at?: string | null
         }
         Relationships: [
@@ -125,57 +86,17 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "matches_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "photos"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matches_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      media: {
-        Row: {
-          created_at: string | null
-          event_id: string | null
-          filename: string
-          id: string
-          media_type: string
-          metadata: Json | null
-          mime_type: string
-          size: number
-          updated_at: string | null
-          url: string
-        }
-        Insert: {
-          created_at?: string | null
-          event_id?: string | null
-          filename: string
-          id?: string
-          media_type: string
-          metadata?: Json | null
-          mime_type: string
-          size: number
-          updated_at?: string | null
-          url: string
-        }
-        Update: {
-          created_at?: string | null
-          event_id?: string | null
-          filename?: string
-          id?: string
-          media_type?: string
-          metadata?: Json | null
-          mime_type?: string
-          size?: number
-          updated_at?: string | null
-          url?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "media_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]
@@ -194,6 +115,47 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      photos: {
+        Row: {
+          created_at: string | null
+          event_id: string | null
+          guest_folder_path: string | null
+          id: string
+          is_matched: boolean | null
+          metadata: Json | null
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_id?: string | null
+          guest_folder_path?: string | null
+          id?: string
+          is_matched?: boolean | null
+          metadata?: Json | null
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string | null
+          guest_folder_path?: string | null
+          id?: string
+          is_matched?: boolean | null
+          metadata?: Json | null
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -224,14 +186,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      event_type:
-        | "birthday"
-        | "wedding"
-        | "photoshoot"
-        | "conference"
-        | "formal_event"
-        | "college_event"
-        | "custom"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never

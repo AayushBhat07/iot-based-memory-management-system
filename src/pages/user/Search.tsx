@@ -6,9 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Search as SearchIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
-
-type Media = Tables<"media">;
 
 interface MatchResult {
   id: string;
@@ -19,7 +16,11 @@ interface MatchResult {
   confidence: number | null;
   match_details: any;
   guest_name: string | null;
-  media: Media | null;
+  photos: {
+    url: string;
+    is_matched: boolean;
+    guest_folder_path: string;
+  } | null;
 }
 
 const Search = () => {
@@ -34,25 +35,11 @@ const Search = () => {
       const { data, error } = await supabase
         .from('matches')
         .select(`
-          id,
-          match_score,
-          reference_photo_url,
-          photo_id,
-          created_at,
-          confidence,
-          match_details,
-          guest_name,
-          media:media!photo_id(
-            id,
+          *,
+          photos (
             url,
-            media_type,
-            metadata,
-            filename,
-            mime_type,
-            size,
-            created_at,
-            updated_at,
-            event_id
+            is_matched,
+            guest_folder_path
           )
         `)
         .order('created_at', { ascending: false });
@@ -60,12 +47,7 @@ const Search = () => {
       if (error) {
         console.error('Error fetching all matches:', error);
       } else {
-        // Ensure the data matches our MatchResult type
-        const typedData: MatchResult[] = (data || []).map(match => ({
-          ...match,
-          media: match.media || null
-        }));
-        setAllMatches(typedData);
+        setAllMatches(data || []);
       }
     };
 
@@ -84,19 +66,18 @@ const Search = () => {
 
     setLoading(true);
     try {
-      // Get reference media
-      const { data: refMediaData, error: refError } = await supabase
-        .from('media')
+      // Get reference photo
+      const { data: refPhotoData, error: refError } = await supabase
+        .from('photos')
         .select('url, metadata')
-        .eq('media_type', 'image')
-        .contains('metadata', { guest_name: searchTerm.trim() })
+        .ilike('metadata->>guest_name', searchTerm.trim())
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
       if (refError) throw refError;
 
-      if (!refMediaData) {
+      if (!refPhotoData) {
         toast({
           title: "No reference photo found",
           description: `No reference photo found for "${searchTerm.trim()}". Please upload a reference photo first.`,
@@ -109,7 +90,7 @@ const Search = () => {
       // Process matching
       const { error: matchError } = await supabase.functions.invoke('match-faces', {
         body: {
-          guestPhotoPath: refMediaData.url,
+          guestPhotoPath: refPhotoData.url,
           photographerEventName: 'test',
           guestName: searchTerm.trim()
         }
@@ -117,29 +98,23 @@ const Search = () => {
 
       if (matchError) throw matchError;
 
-      // Get matches information with related media
+      // Get all photos from guest's folder
+      const guestFolderPath = `test/${searchTerm.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+      const { data: folderPhotos, error: folderError } = await supabase.storage
+        .from('photographer-uploads')
+        .list(guestFolderPath);
+
+      if (folderError) throw folderError;
+
+      // Get matches information
       const { data: matches, error: matchesError } = await supabase
         .from('matches')
         .select(`
-          id,
-          match_score,
-          reference_photo_url,
-          photo_id,
-          created_at,
-          confidence,
-          match_details,
-          guest_name,
-          media:media!photo_id(
-            id,
+          *,
+          photos (
             url,
-            media_type,
-            metadata,
-            filename,
-            mime_type,
-            size,
-            created_at,
-            updated_at,
-            event_id
+            is_matched,
+            guest_folder_path
           )
         `)
         .eq('guest_name', searchTerm.trim())
@@ -147,12 +122,7 @@ const Search = () => {
 
       if (matchesError) throw matchesError;
 
-      // Ensure the data matches our MatchResult type
-      const typedMatches: MatchResult[] = (matches || []).map(match => ({
-        ...match,
-        media: match.media || null
-      }));
-      setResults(typedMatches);
+      setResults(matches || []);
 
       if (!matches || matches.length === 0) {
         toast({
@@ -220,14 +190,14 @@ const Search = () => {
                       className="w-full h-48 object-cover rounded-md"
                     />
                   </div>
-                  {match.media?.url && (
+                  {match.photos?.url && (
                     <div>
                       <p className="text-sm font-medium mb-2">
-                        {match.media.media_type === 'image' ? 'Matched Photo:' : 'Similar Photo (Not Matched):'}
+                        {match.photos.is_matched ? 'Matched Photo:' : 'Similar Photo (Not Matched):'}
                       </p>
                       <img 
-                        src={match.media.url} 
-                        alt={`${match.media.media_type === 'image' ? 'Matched' : 'Similar'} photo of ${match.guest_name}`}
+                        src={match.photos.url} 
+                        alt={`${match.photos.is_matched ? 'Matched' : 'Similar'} photo of ${match.guest_name}`}
                         className="w-full h-48 object-cover rounded-md"
                       />
                     </div>
