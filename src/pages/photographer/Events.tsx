@@ -13,7 +13,7 @@ import {
   TableCaption,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Calendar, Plus, Upload, Image as ImageIcon, Video } from "lucide-react";
+import { Calendar, Plus, Upload, Image as ImageIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -57,16 +57,28 @@ const PhotographerEvents = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        navigate('/photographer/login');
+        return;
+      }
+      
+      // If authenticated, fetch events
+      fetchEvents();
+    };
+
+    checkAuth();
+  }, [navigate]);
+
   const fetchEvents = async () => {
-    setLoading(true);
     try {
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
-      if (sessionError) {
-        throw sessionError;
-      }
-
-      if (!sessionData.session) {
+      if (sessionError || !sessionData.session) {
         navigate('/photographer/login');
         return;
       }
@@ -74,7 +86,6 @@ const PhotographerEvents = () => {
       const { data, error } = await supabase
         .from("events")
         .select("*")
-        .eq('photographer_id', sessionData.session.user.id)
         .order("date", { ascending: false });
 
       if (error) {
@@ -104,7 +115,13 @@ const PhotographerEvents = () => {
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !sessionData.session) {
-        throw new Error("You must be logged in to create events");
+        toast({
+          title: "Error",
+          description: "You must be logged in to create events",
+          variant: "destructive",
+        });
+        navigate('/photographer/login');
+        return;
       }
 
       const { data: eventData, error: eventError } = await supabase
@@ -136,7 +153,7 @@ const PhotographerEvents = () => {
         type: "custom",
       });
       
-      fetchEvents(); // Refresh the events list
+      fetchEvents();
       
     } catch (error) {
       console.error("Error creating event:", error);
@@ -244,12 +261,8 @@ const PhotographerEvents = () => {
       });
       setFiles(null);
       setUploadingFiles([]);
+      setIsUploadModalOpen(false);
     }
-  };
-
-  const handleEventClick = (event: Event) => {
-    setSelectedEvent(event);
-    setIsUploadModalOpen(true);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -275,10 +288,6 @@ const PhotographerEvents = () => {
     const searchFilter = event.name.toLowerCase().includes(searchQuery.toLowerCase());
     return dateFilter && searchFilter;
   });
-
-  useEffect(() => {
-    fetchEvents();
-  }, [navigate, toast]);
 
   return (
     <div className="container mx-auto py-10 px-4 min-h-screen bg-gradient-to-b from-white to-blue-50">
@@ -416,21 +425,17 @@ const PhotographerEvents = () => {
                   filteredEvents.map((event) => (
                     <TableRow key={event.id} className="hover:bg-muted/50">
                       <TableCell className="font-medium">{formatDate(event.date)}</TableCell>
-                      <TableCell>
-                        <button
-                          onClick={() => handleEventClick(event)}
-                          className="text-left hover:text-primary transition-colors"
-                        >
-                          {event.name}
-                        </button>
-                      </TableCell>
+                      <TableCell>{event.name}</TableCell>
                       <TableCell>{event.location}</TableCell>
                       <TableCell className="capitalize">{event.type?.replace('_', ' ')}</TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleEventClick(event)}
+                          onClick={() => {
+                            setSelectedEvent(event);
+                            setIsUploadModalOpen(true);
+                          }}
                         >
                           <Upload className="w-4 h-4 mr-2" />
                           Upload Media
