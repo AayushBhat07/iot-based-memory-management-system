@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
 import { Upload, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface EventMetadata {
   eventName: string;
@@ -23,6 +24,7 @@ const PhotographerUpload = () => {
     date: "",
   });
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -58,16 +60,40 @@ const PhotographerUpload = () => {
     setProgress(0);
 
     try {
+      // First check if user is authenticated
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !sessionData.session) {
+        throw new Error("You must be logged in to upload photos");
+      }
+
+      // Create the event first
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .insert({
+          name: metadata.eventName,
+          location: metadata.location,
+          date: metadata.date,
+          photographer_id: sessionData.session.user.id // Set the photographer_id to the current user's ID
+        })
+        .select()
+        .single();
+
+      if (eventError || !eventData) {
+        throw eventError || new Error("Failed to create event");
+      }
+
+      // Now upload the photos
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const fileExt = file.name.split('.').pop();
         const fileName = `${metadata.eventName}/${Date.now()}-${i}.${fileExt}`;
 
-        const { error } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('photographer-uploads')
           .upload(fileName, file);
 
-        if (error) throw error;
+        if (uploadError) throw uploadError;
 
         // Update progress
         const currentProgress = ((i + 1) / files.length) * 100;
@@ -76,19 +102,17 @@ const PhotographerUpload = () => {
 
       toast({
         title: "Upload successful",
-        description: `Successfully uploaded ${files.length} images`,
+        description: `Successfully created event and uploaded ${files.length} images`,
       });
 
-      // Reset form
-      setFiles(null);
-      setProgress(0);
-      const fileInput = document.getElementById('file-upload') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
+      // Navigate to events page after successful upload
+      navigate('/photographer/events');
       
     } catch (error) {
+      console.error("Upload error:", error);
       toast({
         title: "Upload failed",
-        description: "There was an error uploading your images",
+        description: error instanceof Error ? error.message : "There was an error uploading your images",
         variant: "destructive",
       });
     } finally {
