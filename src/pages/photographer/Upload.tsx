@@ -74,7 +74,7 @@ const PhotographerUpload = () => {
           name: metadata.eventName,
           location: metadata.location,
           date: metadata.date,
-          photographer_id: sessionData.session.user.id // Set the photographer_id to the current user's ID
+          photographer_id: sessionData.session.user.id
         })
         .select()
         .single();
@@ -83,17 +83,47 @@ const PhotographerUpload = () => {
         throw eventError || new Error("Failed to create event");
       }
 
-      // Now upload the photos
+      // Now upload the photos and create photo records
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const fileExt = file.name.split('.').pop();
-        const fileName = `${metadata.eventName}/${Date.now()}-${i}.${fileExt}`;
+        const fileName = `${eventData.id}/${Date.now()}-${i}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
+        // Upload the file to storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from('photographer-uploads')
-          .upload(fileName, file);
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw new Error(`Failed to upload photo ${i + 1}`);
+        }
+
+        // Get the public URL for the uploaded file
+        const { data: publicUrlData } = supabase.storage
+          .from('photographer-uploads')
+          .getPublicUrl(fileName);
+
+        // Create a record in the photos table
+        const { error: photoError } = await supabase
+          .from('photos')
+          .insert({
+            event_id: eventData.id,
+            url: publicUrlData.publicUrl,
+            metadata: {
+              originalName: file.name,
+              size: file.size,
+              type: file.type
+            }
+          });
+
+        if (photoError) {
+          console.error('Photo record error:', photoError);
+          throw new Error(`Failed to create photo record ${i + 1}`);
+        }
 
         // Update progress
         const currentProgress = ((i + 1) / files.length) * 100;
