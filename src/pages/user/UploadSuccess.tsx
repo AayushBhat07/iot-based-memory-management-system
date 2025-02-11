@@ -1,6 +1,6 @@
 
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Camera, Search } from "lucide-react";
 
 const UploadSuccess = () => {
