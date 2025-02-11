@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +18,7 @@ import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
 
 type Event = Tables<"events">;
 
@@ -26,11 +28,23 @@ const PhotographerEvents = () => {
   const navigate = useNavigate();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [searchQuery, setSearchQuery] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchEvents = async () => {
       setLoading(true);
       try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          throw sessionError;
+        }
+
+        if (!sessionData.session) {
+          navigate('/photographer/login');
+          return;
+        }
+
         const { data, error } = await supabase
           .from("events")
           .select("*")
@@ -38,16 +52,29 @@ const PhotographerEvents = () => {
 
         if (error) {
           console.error("Error fetching events:", error);
+          toast({
+            title: "Error",
+            description: "Failed to fetch events. Please try again.",
+            variant: "destructive",
+          });
         } else {
+          console.log("Fetched events:", data);
           setEvents(data || []);
         }
+      } catch (error) {
+        console.error("Error:", error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred.",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchEvents();
-  }, []);
+  }, [navigate, toast]);
 
   const formatDate = (dateString: string): string => {
     try {
@@ -125,13 +152,21 @@ const PhotographerEvents = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredEvents.map((event) => (
-                  <TableRow key={event.id}>
-                    <TableCell className="font-medium">{formatDate(event.date)}</TableCell>
-                    <TableCell>{event.name}</TableCell>
-                    <TableCell>{event.location}</TableCell>
+                {filteredEvents.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center text-muted-foreground">
+                      No events found
+                    </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  filteredEvents.map((event) => (
+                    <TableRow key={event.id} className="hover:bg-muted/50 cursor-pointer">
+                      <TableCell className="font-medium">{formatDate(event.date)}</TableCell>
+                      <TableCell>{event.name}</TableCell>
+                      <TableCell>{event.location}</TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
