@@ -1,44 +1,65 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
-import { Upload, Image as ImageIcon } from "lucide-react";
+import { Upload, Image as ImageIcon, Video, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-interface EventMetadata {
-  eventName: string;
-  location: string;
-  date: string;
+interface UploadingFile {
+  file: File;
+  progress: number;
+  status: 'uploading' | 'completed' | 'error';
 }
 
 const PhotographerUpload = () => {
   const [files, setFiles] = useState<FileList | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [metadata, setMetadata] = useState<EventMetadata>({
-    eventName: "",
-    location: "",
-    date: "",
-  });
+  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
+  const [eventDetails, setEventDetails] = useState<{ name: string; date: string } | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { eventId } = useParams();
+
+  useEffect(() => {
+    const fetchEventDetails = async () => {
+      if (!eventId) {
+        navigate('/photographer/events');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('events')
+        .select('name, date')
+        .eq('id', eventId)
+        .single();
+
+      if (error || !data) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch event details",
+          variant: "destructive",
+        });
+        navigate('/photographer/events');
+        return;
+      }
+
+      setEventDetails(data);
+    };
+
+    fetchEventDetails();
+  }, [eventId, navigate, toast]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFiles(e.target.files);
+      setUploadingFiles([]);
     }
   };
 
-  const handleMetadataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setMetadata(prev => ({ ...prev, [name]: value }));
-  };
-
   const handleUpload = async () => {
-    if (!files || files.length === 0) {
+    if (!files || files.length === 0 || !eventId) {
       toast({
         title: "No files selected",
         description: "Please select files to upload",
@@ -47,143 +68,119 @@ const PhotographerUpload = () => {
       return;
     }
 
-    if (!metadata.eventName || !metadata.location || !metadata.date) {
-      toast({
-        title: "Missing metadata",
-        description: "Please fill in all event details",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Convert FileList to array of UploadingFile objects
+    const filesToUpload: UploadingFile[] = Array.from(files).map(file => ({
+      file,
+      progress: 0,
+      status: 'uploading'
+    }));
+    setUploadingFiles(filesToUpload);
 
-    setUploading(true);
-    setProgress(0);
+    for (let i = 0; i < filesToUpload.length; i++) {
+      const file = filesToUpload[i].file;
+      try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !sessionData.session) {
+          throw new Error("You must be logged in to upload files");
+        }
 
-    try {
-      // First check if user is authenticated
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !sessionData.session) {
-        throw new Error("You must be logged in to upload photos");
-      }
+        // Determine media type
+        const mediaType = file.type.startsWith('image/') ? 'image' : 
+                         file.type.startsWith('video/') ? 'video' : null;
 
-      // Create the event first
-      const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .insert({
-          name: metadata.eventName,
-          location: metadata.location,
-          date: metadata.date,
-          photographer_id: sessionData.session.user.id
-        })
-        .select()
-        .single();
+        if (!mediaType) {
+          throw new Error(`Unsupported file type: ${file.type}`);
+        }
 
-      if (eventError || !eventData) {
-        throw eventError || new Error("Failed to create event");
-      }
-
-      // Now upload the photos and create photo records
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
         const fileExt = file.name.split('.').pop();
-        const fileName = `${eventData.id}/${Date.now()}-${i}.${fileExt}`;
+        const fileName = `${eventId}/${Date.now()}-${i}.${fileExt}`;
 
         // Upload the file to storage
         const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('photographer-uploads')
+          .from('event-media')
           .upload(fileName, file, {
             cacheControl: '3600',
             upsert: false
           });
 
         if (uploadError) {
-          console.error('Upload error:', uploadError);
-          throw new Error(`Failed to upload photo ${i + 1}`);
+          throw uploadError;
         }
 
-        // Get the public URL for the uploaded file
+        // Get the public URL
         const { data: publicUrlData } = supabase.storage
-          .from('photographer-uploads')
+          .from('event-media')
           .getPublicUrl(fileName);
 
-        // Create a record in the photos table
-        const { error: photoError } = await supabase
-          .from('photos')
+        // Create a record in the media table
+        const { error: mediaError } = await supabase
+          .from('media')
           .insert({
-            event_id: eventData.id,
+            event_id: eventId,
             url: publicUrlData.publicUrl,
+            media_type: mediaType,
+            filename: file.name,
+            size: file.size,
+            mime_type: file.type,
             metadata: {
               originalName: file.name,
-              size: file.size,
-              type: file.type
+              uploadedBy: sessionData.session.user.id
             }
           });
 
-        if (photoError) {
-          console.error('Photo record error:', photoError);
-          throw new Error(`Failed to create photo record ${i + 1}`);
+        if (mediaError) {
+          throw mediaError;
         }
 
         // Update progress
-        const currentProgress = ((i + 1) / files.length) * 100;
-        setProgress(currentProgress);
+        setUploadingFiles(prev => prev.map((item, index) => 
+          index === i ? { ...item, progress: 100, status: 'completed' } : item
+        ));
+
+      } catch (error) {
+        console.error(`Error uploading file ${file.name}:`, error);
+        setUploadingFiles(prev => prev.map((item, index) => 
+          index === i ? { ...item, status: 'error' } : item
+        ));
+
+        toast({
+          title: "Upload Error",
+          description: `Failed to upload ${file.name}`,
+          variant: "destructive",
+        });
       }
+    }
 
+    // Show success message if at least one file was uploaded
+    const successfulUploads = uploadingFiles.filter(f => f.status === 'completed').length;
+    if (successfulUploads > 0) {
       toast({
-        title: "Upload successful",
-        description: `Successfully created event and uploaded ${files.length} images`,
+        title: "Upload Complete",
+        description: `Successfully uploaded ${successfulUploads} files`,
       });
-
-      // Navigate to events page after successful upload
-      navigate('/photographer/events');
-      
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast({
-        title: "Upload failed",
-        description: error instanceof Error ? error.message : "There was an error uploading your images",
-        variant: "destructive",
-      });
-    } finally {
-      setUploading(false);
     }
   };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="space-y-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold mb-2">Upload Photos</h1>
-          <p className="text-muted-foreground">
-            Upload multiple photos and organize them by event
-          </p>
-        </div>
+        <Button
+          variant="ghost"
+          className="mb-4"
+          onClick={() => navigate('/photographer/events')}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Events
+        </Button>
 
-        {/* Event Metadata Form */}
-        <div className="glass-card p-6 space-y-4">
-          <h2 className="text-xl font-semibold mb-4">Event Details</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Input
-              name="eventName"
-              placeholder="Event Name"
-              value={metadata.eventName}
-              onChange={handleMetadataChange}
-            />
-            <Input
-              name="location"
-              placeholder="Location"
-              value={metadata.location}
-              onChange={handleMetadataChange}
-            />
-            <Input
-              name="date"
-              type="date"
-              value={metadata.date}
-              onChange={handleMetadataChange}
-              className="md:col-span-2"
-            />
-          </div>
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-2">Upload Media</h1>
+          {eventDetails && (
+            <p className="text-muted-foreground">
+              Uploading to: {eventDetails.name} ({format(new Date(eventDetails.date), "PPP")})
+            </p>
+          )}
         </div>
 
         {/* Upload Section */}
@@ -199,7 +196,7 @@ const PhotographerUpload = () => {
                   <span className="font-semibold">Click to upload</span> or drag and drop
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  JPG, PNG, JPEG (MAX. 10MB each)
+                  Images (JPG, PNG) and Videos (MP4, MOV)
                 </p>
               </div>
               <input
@@ -207,37 +204,50 @@ const PhotographerUpload = () => {
                 type="file"
                 className="hidden"
                 multiple
-                accept=".jpg,.jpeg,.png"
+                accept="image/*,video/*"
                 onChange={handleFileChange}
-                disabled={uploading}
+                disabled={uploadingFiles.some(f => f.status === 'uploading')}
               />
             </label>
           </div>
 
-          {files && (
-            <div className="space-y-2">
+          {files && files.length > 0 && (
+            <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <ImageIcon className="w-5 h-5 text-primary" />
                 <span>{files.length} files selected</span>
               </div>
-              {uploading && (
-                <div className="space-y-2">
-                  <Progress value={progress} />
-                  <p className="text-sm text-muted-foreground text-center">
-                    Uploading... {Math.round(progress)}%
-                  </p>
+              
+              {uploadingFiles.map((file, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="truncate">{file.file.name}</span>
+                    <span className={cn(
+                      "text-xs",
+                      file.status === 'completed' ? "text-green-500" :
+                      file.status === 'error' ? "text-red-500" :
+                      "text-muted-foreground"
+                    )}>
+                      {file.status === 'completed' ? 'Completed' :
+                       file.status === 'error' ? 'Failed' :
+                       'Uploading...'}
+                    </span>
+                  </div>
+                  <Progress value={file.progress} />
                 </div>
-              )}
+              ))}
+
+              <Button
+                onClick={handleUpload}
+                disabled={uploadingFiles.some(f => f.status === 'uploading')}
+                className="w-full"
+              >
+                {uploadingFiles.some(f => f.status === 'uploading')
+                  ? "Uploading..."
+                  : "Upload Files"}
+              </Button>
             </div>
           )}
-
-          <Button
-            onClick={handleUpload}
-            disabled={!files || uploading}
-            className="w-full"
-          >
-            {uploading ? "Uploading..." : "Upload Photos"}
-          </Button>
         </div>
       </div>
     </div>
@@ -245,3 +255,4 @@ const PhotographerUpload = () => {
 };
 
 export default PhotographerUpload;
+

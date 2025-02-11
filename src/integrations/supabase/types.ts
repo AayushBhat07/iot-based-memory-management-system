@@ -125,17 +125,57 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "matches_photo_id_fkey"
-            columns: ["photo_id"]
-            isOneToOne: false
-            referencedRelation: "photos"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "matches_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media: {
+        Row: {
+          created_at: string | null
+          event_id: string | null
+          filename: string
+          id: string
+          media_type: string
+          metadata: Json | null
+          mime_type: string
+          size: number
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_id?: string | null
+          filename: string
+          id?: string
+          media_type: string
+          metadata?: Json | null
+          mime_type: string
+          size: number
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string | null
+          filename?: string
+          id?: string
+          media_type?: string
+          metadata?: Json | null
+          mime_type?: string
+          size?: number
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]
@@ -154,47 +194,6 @@ export type Database = {
           id?: string
         }
         Relationships: []
-      }
-      photos: {
-        Row: {
-          created_at: string | null
-          event_id: string | null
-          guest_folder_path: string | null
-          id: string
-          is_matched: boolean | null
-          metadata: Json | null
-          updated_at: string | null
-          url: string
-        }
-        Insert: {
-          created_at?: string | null
-          event_id?: string | null
-          guest_folder_path?: string | null
-          id?: string
-          is_matched?: boolean | null
-          metadata?: Json | null
-          updated_at?: string | null
-          url: string
-        }
-        Update: {
-          created_at?: string | null
-          event_id?: string | null
-          guest_folder_path?: string | null
-          id?: string
-          is_matched?: boolean | null
-          metadata?: Json | null
-          updated_at?: string | null
-          url?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "photos_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       profiles: {
         Row: {

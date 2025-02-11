@@ -27,8 +27,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/photographer/login" element={<PhotographerLogin />} />
           <Route path="/photographer/options" element={<PhotographerOptions />} />
-          <Route path="/photographer/upload" element={<PhotographerUpload />} />
           <Route path="/photographer/events" element={<PhotographerEvents />} />
+          <Route path="/photographer/upload/:eventId" element={<PhotographerUpload />} />
           <Route path="/user" element={<UserOptions />} />
           <Route path="/user/reference-upload" element={<ReferenceUpload />} />
           <Route path="/user/upload-success" element={<UploadSuccess />} />
