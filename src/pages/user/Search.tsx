@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -5,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Search as SearchIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Tables } from "@/integrations/supabase/types";
+
+type Media = Tables<"media">;
 
 interface MatchResult {
   id: string;
@@ -15,11 +19,7 @@ interface MatchResult {
   confidence: number | null;
   match_details: any;
   guest_name: string | null;
-  media?: {
-    url: string;
-    media_type: string;
-    metadata: any;
-  } | null;
+  media: Media | null;
 }
 
 const Search = () => {
@@ -34,11 +34,25 @@ const Search = () => {
       const { data, error } = await supabase
         .from('matches')
         .select(`
-          *,
-          media:photo_id (
+          id,
+          match_score,
+          reference_photo_url,
+          photo_id,
+          created_at,
+          confidence,
+          match_details,
+          guest_name,
+          media:media!photo_id(
+            id,
             url,
             media_type,
-            metadata
+            metadata,
+            filename,
+            mime_type,
+            size,
+            created_at,
+            updated_at,
+            event_id
           )
         `)
         .order('created_at', { ascending: false });
@@ -46,7 +60,12 @@ const Search = () => {
       if (error) {
         console.error('Error fetching all matches:', error);
       } else {
-        setAllMatches(data || []);
+        // Ensure the data matches our MatchResult type
+        const typedData: MatchResult[] = (data || []).map(match => ({
+          ...match,
+          media: match.media || null
+        }));
+        setAllMatches(typedData);
       }
     };
 
@@ -102,11 +121,25 @@ const Search = () => {
       const { data: matches, error: matchesError } = await supabase
         .from('matches')
         .select(`
-          *,
-          media:photo_id (
+          id,
+          match_score,
+          reference_photo_url,
+          photo_id,
+          created_at,
+          confidence,
+          match_details,
+          guest_name,
+          media:media!photo_id(
+            id,
             url,
             media_type,
-            metadata
+            metadata,
+            filename,
+            mime_type,
+            size,
+            created_at,
+            updated_at,
+            event_id
           )
         `)
         .eq('guest_name', searchTerm.trim())
@@ -114,7 +147,12 @@ const Search = () => {
 
       if (matchesError) throw matchesError;
 
-      setResults(matches || []);
+      // Ensure the data matches our MatchResult type
+      const typedMatches: MatchResult[] = (matches || []).map(match => ({
+        ...match,
+        media: match.media || null
+      }));
+      setResults(typedMatches);
 
       if (!matches || matches.length === 0) {
         toast({
