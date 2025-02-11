@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
@@ -21,6 +21,13 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Event = Tables<"events">;
 
@@ -34,6 +41,7 @@ const PhotographerEvents = () => {
     name: "",
     location: "",
     date: new Date().toISOString().split('T')[0],
+    type: "custom" as const,
   });
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -55,6 +63,7 @@ const PhotographerEvents = () => {
       const { data, error } = await supabase
         .from("events")
         .select("*")
+        .eq('photographer_id', sessionData.session.user.id)
         .order("date", { ascending: false });
 
       if (error) {
@@ -93,6 +102,7 @@ const PhotographerEvents = () => {
           name: newEvent.name,
           location: newEvent.location,
           date: newEvent.date,
+          type: newEvent.type,
           photographer_id: sessionData.session.user.id
         })
         .select()
@@ -112,6 +122,7 @@ const PhotographerEvents = () => {
         name: "",
         location: "",
         date: new Date().toISOString().split('T')[0],
+        type: "custom",
       });
       
       // Navigate to upload page for the new event
@@ -216,6 +227,28 @@ const PhotographerEvents = () => {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="type">Event Type</Label>
+                  <Select
+                    value={newEvent.type}
+                    onValueChange={(value: typeof newEvent.type) => 
+                      setNewEvent(prev => ({ ...prev, type: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select event type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="wedding">Wedding</SelectItem>
+                      <SelectItem value="birthday">Birthday</SelectItem>
+                      <SelectItem value="conference">Conference</SelectItem>
+                      <SelectItem value="formal_event">Formal Event</SelectItem>
+                      <SelectItem value="college_event">College Event</SelectItem>
+                      <SelectItem value="photoshoot">Photoshoot</SelectItem>
+                      <SelectItem value="custom">Custom</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="date">Date</Label>
                   <Input
                     id="date"
@@ -247,13 +280,14 @@ const PhotographerEvents = () => {
                   <TableHead className="w-[100px]">Date</TableHead>
                   <TableHead>Event Name</TableHead>
                   <TableHead>Location</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredEvents.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center text-muted-foreground">
                       No events found
                     </TableCell>
                   </TableRow>
@@ -263,6 +297,7 @@ const PhotographerEvents = () => {
                       <TableCell className="font-medium">{formatDate(event.date)}</TableCell>
                       <TableCell>{event.name}</TableCell>
                       <TableCell>{event.location}</TableCell>
+                      <TableCell className="capitalize">{event.type?.replace('_', ' ')}</TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
