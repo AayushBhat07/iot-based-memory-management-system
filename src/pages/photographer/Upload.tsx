@@ -4,15 +4,21 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
-import { Upload, Image as ImageIcon, Video, ArrowLeft } from "lucide-react";
+import { Upload as UploadIcon, Image as ImageIcon, Video, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useParams } from "react-router-dom";
+import { format } from "date-fns";
 
 interface UploadingFile {
   file: File;
   progress: number;
   status: 'uploading' | 'completed' | 'error';
 }
+
+// Utility function for className concatenation
+const cn = (...inputs: (string | boolean | undefined | null)[]): string => {
+  return inputs.filter(Boolean).join(" ");
+};
 
 const PhotographerUpload = () => {
   const [files, setFiles] = useState<FileList | null>(null);
@@ -191,7 +197,7 @@ const PhotographerUpload = () => {
               className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <Upload className="w-12 h-12 mb-4 text-primary" />
+                <UploadIcon className="w-12 h-12 mb-4 text-primary" />
                 <p className="mb-2 text-sm text-muted-foreground">
                   <span className="font-semibold">Click to upload</span> or drag and drop
                 </p>
@@ -255,4 +261,3 @@ const PhotographerUpload = () => {
 };
 
 export default PhotographerUpload;
-
