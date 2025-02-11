@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      event_photographers: {
+        Row: {
+          added_at: string | null
+          event_id: string | null
+          id: string
+          photographer_id: string | null
+        }
+        Insert: {
+          added_at?: string | null
+          event_id?: string | null
+          id?: string
+          photographer_id?: string | null
+        }
+        Update: {
+          added_at?: string | null
+          event_id?: string | null
+          id?: string
+          photographer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_photographers_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_photographers_photographer_id_fkey"
+            columns: ["photographer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           created_at: string | null
@@ -17,6 +53,7 @@ export type Database = {
           location: string
           name: string
           photographer_id: string
+          type: Database["public"]["Enums"]["event_type"] | null
           updated_at: string | null
         }
         Insert: {
@@ -26,6 +63,7 @@ export type Database = {
           location: string
           name: string
           photographer_id: string
+          type?: Database["public"]["Enums"]["event_type"] | null
           updated_at?: string | null
         }
         Update: {
@@ -35,6 +73,7 @@ export type Database = {
           location?: string
           name?: string
           photographer_id?: string
+          type?: Database["public"]["Enums"]["event_type"] | null
           updated_at?: string | null
         }
         Relationships: [
@@ -186,7 +225,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      event_type:
+        | "birthday"
+        | "wedding"
+        | "photoshoot"
+        | "conference"
+        | "formal_event"
+        | "college_event"
+        | "custom"
     }
     CompositeTypes: {
       [_ in never]: never
