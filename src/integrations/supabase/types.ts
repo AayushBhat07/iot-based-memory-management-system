@@ -195,6 +195,47 @@ export type Database = {
         }
         Relationships: []
       }
+      photos: {
+        Row: {
+          created_at: string | null
+          event_id: string | null
+          guest_folder_path: string | null
+          id: string
+          is_matched: boolean | null
+          metadata: Json | null
+          url: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_id?: string | null
+          guest_folder_path?: string | null
+          id?: string
+          is_matched?: boolean | null
+          metadata?: Json | null
+          url: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string | null
+          guest_folder_path?: string | null
+          id?: string
+          is_matched?: boolean | null
+          metadata?: Json | null
+          url?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null

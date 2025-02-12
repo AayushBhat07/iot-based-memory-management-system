@@ -91,11 +91,11 @@ const ReferenceUpload = () => {
             url: publicUrl,
             event_id: null,
             metadata: {
-              is_reference: true,
               guest_name: guestName.trim(),
               original_filename: file.name,
-              uploaded_by: null // explicitly set to null for reference photos
-            }
+              is_reference: true
+            },
+            guest_folder_path: sanitizedName
           });
 
         if (dbError) throw dbError;
