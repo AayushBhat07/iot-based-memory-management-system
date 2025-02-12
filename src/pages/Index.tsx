@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { Camera, User, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -7,22 +6,23 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
-  // Fetch photos from the photos table
+  // Fetch background media from the media table
   const { data: backgroundPhotos = [] } = useQuery({
     queryKey: ['background-photos'],
     queryFn: async () => {
-      const { data: photos, error } = await supabase
-        .from('photos')
+      const { data: media, error } = await supabase
+        .from('media')
         .select('url')
+        .eq('media_type', 'image')
         .limit(5);
 
       if (error) {
-        console.error('Error fetching photos:', error);
+        console.error('Error fetching media:', error);
         return Array(5).fill('/placeholder.svg');
       }
 
-      return photos?.length > 0 
-        ? photos.map(photo => photo.url)
+      return media?.length > 0 
+        ? media.map(item => item.url)
         : Array(5).fill('/placeholder.svg');
     }
   });
