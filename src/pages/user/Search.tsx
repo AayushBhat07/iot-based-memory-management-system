@@ -39,7 +39,7 @@ const Search = () => {
           .from('matches')
           .select(`
             *,
-            media (
+            media:photo_id (
               url,
               media_type,
               filename
@@ -49,7 +49,13 @@ const Search = () => {
         
         if (error) throw error;
         
-        setAllMatches(data || []);
+        // Transform the data to ensure media property matches MediaData interface
+        const transformedData: MatchResult[] = (data || []).map(match => ({
+          ...match,
+          media: match.media || null
+        }));
+        
+        setAllMatches(transformedData);
       } catch (error) {
         console.error('Error fetching all matches:', error);
         toast({
@@ -100,7 +106,7 @@ const Search = () => {
         .from('matches')
         .select(`
           *,
-          media (
+          media:photo_id (
             url,
             media_type,
             filename
@@ -111,7 +117,13 @@ const Search = () => {
 
       if (matchesError) throw matchesError;
 
-      setResults(matches || []);
+      // Transform the matches data to ensure media property matches MediaData interface
+      const transformedMatches: MatchResult[] = (matches || []).map(match => ({
+        ...match,
+        media: match.media || null
+      }));
+
+      setResults(transformedMatches);
 
       if (!matches || matches.length === 0) {
         toast({
