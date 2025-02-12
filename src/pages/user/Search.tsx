@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -5,6 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Search as SearchIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
+interface MediaData {
+  url: string | null;
+  media_type: string | null;
+  filename: string | null;
+}
 
 interface MatchResult {
   id: string;
@@ -15,11 +22,7 @@ interface MatchResult {
   confidence: number | null;
   match_details: any;
   guest_name: string | null;
-  media: {
-    url: string;
-    media_type: string;
-    filename: string;
-  } | null;
+  media: MediaData | null;
 }
 
 const Search = () => {
@@ -31,27 +34,34 @@ const Search = () => {
 
   useEffect(() => {
     const fetchAllMatches = async () => {
-      const { data, error } = await supabase
-        .from('matches')
-        .select(`
-          *,
-          media (
-            url,
-            media_type,
-            filename
-          )
-        `)
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Error fetching all matches:', error);
-      } else {
+      try {
+        const { data, error } = await supabase
+          .from('matches')
+          .select(`
+            *,
+            media (
+              url,
+              media_type,
+              filename
+            )
+          `)
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
         setAllMatches(data || []);
+      } catch (error) {
+        console.error('Error fetching all matches:', error);
+        toast({
+          title: "Error loading matches",
+          description: "Failed to load existing matches",
+          variant: "destructive",
+        });
       }
     };
 
     fetchAllMatches();
-  }, []);
+  }, [toast]);
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
