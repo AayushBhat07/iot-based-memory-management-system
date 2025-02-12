@@ -7,12 +7,6 @@ import { Search as SearchIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-interface Photo {
-  url: string;
-  is_matched: boolean | null;
-  guest_folder_path: string | null;
-}
-
 interface MatchResult {
   id: string;
   match_score: number;
@@ -22,7 +16,11 @@ interface MatchResult {
   confidence: number | null;
   match_details: any;
   guest_name: string | null;
-  photos: Photo | null;
+  photos: {
+    url: string;
+    is_matched: boolean;
+    guest_folder_path: string;
+  } | null;
 }
 
 const Search = () => {
@@ -38,7 +36,7 @@ const Search = () => {
         .from('matches')
         .select(`
           *,
-          photos:photo_id (
+          photos (
             url,
             is_matched,
             guest_folder_path
@@ -49,7 +47,7 @@ const Search = () => {
       if (error) {
         console.error('Error fetching all matches:', error);
       } else {
-        setAllMatches(data as MatchResult[]);
+        setAllMatches(data || []);
       }
     };
 
@@ -113,7 +111,7 @@ const Search = () => {
         .from('matches')
         .select(`
           *,
-          photos:photo_id (
+          photos (
             url,
             is_matched,
             guest_folder_path
@@ -124,7 +122,7 @@ const Search = () => {
 
       if (matchesError) throw matchesError;
 
-      setResults(matches as MatchResult[]);
+      setResults(matches || []);
 
       if (!matches || matches.length === 0) {
         toast({
