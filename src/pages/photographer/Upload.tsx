@@ -58,16 +58,56 @@ const PhotographerUpload = () => {
     setProgress(0);
 
     try {
+      // First, create the event
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .insert({
+          name: metadata.eventName,
+          location: metadata.location,
+          date: metadata.date,
+          type: 'custom',
+          photographer_id: (await supabase.auth.getUser()).data.user?.id
+        })
+        .select()
+        .single();
+
+      if (eventError) throw eventError;
+
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const fileExt = file.name.split('.').pop();
         const fileName = `${metadata.eventName}/${Date.now()}-${i}.${fileExt}`;
 
-        const { error } = await supabase.storage
+        // Upload to storage
+        const { data: storageData, error: storageError } = await supabase.storage
           .from('photographer-uploads')
           .upload(fileName, file);
 
-        if (error) throw error;
+        if (storageError) throw storageError;
+
+        // Get the public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('photographer-uploads')
+          .getPublicUrl(fileName);
+
+        // Create media record
+        const { error: mediaError } = await supabase
+          .from('media')
+          .insert({
+            url: publicUrl,
+            filename: fileName,
+            media_type: 'image',
+            mime_type: file.type,
+            size: file.size,
+            event_id: eventData.id,
+            metadata: {
+              original_filename: file.name,
+              event_name: metadata.eventName,
+              upload_date: new Date().toISOString()
+            }
+          });
+
+        if (mediaError) throw mediaError;
 
         // Update progress
         const currentProgress = ((i + 1) / files.length) * 100;
@@ -86,6 +126,7 @@ const PhotographerUpload = () => {
       if (fileInput) fileInput.value = '';
       
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: "Upload failed",
         description: "There was an error uploading your images",
