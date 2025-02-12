@@ -125,6 +125,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "matches_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "photos"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matches_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
