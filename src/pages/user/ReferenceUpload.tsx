@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -83,15 +84,12 @@ const ReferenceUpload = () => {
           .from('guest-reference-photos')
           .getPublicUrl(fileName);
 
-        // Then create a record in the media table with metadata
+        // Then create a record in the photos table with metadata
         const { error: dbError } = await supabase
-          .from('media')
+          .from('photos')
           .insert({
             url: publicUrl,
-            media_type: 'image',
-            filename: file.name,
-            mime_type: file.type,
-            size: file.size,
+            event_id: null,
             metadata: {
               is_reference: true,
               guest_name: guestName.trim(),
