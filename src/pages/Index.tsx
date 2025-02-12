@@ -1,10 +1,10 @@
-
 import { motion } from "framer-motion";
 import { Camera, User, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const Index = () => {
   // Fetch photos from the photos table
@@ -29,6 +29,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary overflow-hidden relative">
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
       {/* Floating Background Photos */}
       <div className="absolute inset-0 -z-10">
         {backgroundPhotos.map((photoUrl, index) => (

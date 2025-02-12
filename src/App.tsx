@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "@/components/theme-provider";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PhotographerUpload from "./pages/photographer/Upload";
@@ -16,21 +17,23 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <BrowserRouter>
-        <Toaster />
-        <Sonner />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/photographer/upload" element={<PhotographerUpload />} />
-          <Route path="/photographer/login" element={<PhotographerLogin />} />
-          <Route path="/user" element={<UserOptions />} />
-          <Route path="/user/reference-upload" element={<ReferenceUpload />} />
-          <Route path="/user/search" element={<Search />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider defaultTheme="system" enableSystem>
+      <TooltipProvider>
+        <BrowserRouter>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/photographer/upload" element={<PhotographerUpload />} />
+            <Route path="/photographer/login" element={<PhotographerLogin />} />
+            <Route path="/user" element={<UserOptions />} />
+            <Route path="/user/reference-upload" element={<ReferenceUpload />} />
+            <Route path="/user/search" element={<Search />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
