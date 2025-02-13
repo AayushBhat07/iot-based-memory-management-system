@@ -1,11 +1,11 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Line } from "recharts";
+import { Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, Edit, Settings, Image, List, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/utils";
 
@@ -179,26 +179,36 @@ const Dashboard = () => {
             <CardTitle>Events Overview</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ChartContainer 
-                config={{
-                  events: {
-                    label: "Events Created",
-                    color: "#9b87f5"
-                  }
-                }}
-              >
-                <>
-                  <Line
-                    data={chartData}
-                    dataKey="events"
-                    type="monotone"
-                    dot={false}
-                    strokeWidth={2}
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <Line
+                  data={chartData}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="date"
+                    tickFormatter={(value) => {
+                      const date = new Date(value);
+                      return date.toLocaleDateString('default', { month: 'short' });
+                    }}
                   />
-                  <ChartTooltip />
-                </>
-              </ChartContainer>
+                  <YAxis />
+                  <Tooltip
+                    labelFormatter={(value) => {
+                      const date = new Date(value);
+                      return date.toLocaleDateString('default', { month: 'long', year: 'numeric' });
+                    }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="events" 
+                    stroke="#9b87f5" 
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </Line>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
