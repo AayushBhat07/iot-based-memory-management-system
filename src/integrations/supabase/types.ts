@@ -47,32 +47,41 @@ export type Database = {
       }
       events: {
         Row: {
+          completion_status: string | null
           created_at: string | null
           date: string
+          expected_photos: number | null
           id: string
           location: string
           name: string
           photographer_id: string
+          satisfaction_rating: number | null
           type: Database["public"]["Enums"]["event_type"] | null
           updated_at: string | null
         }
         Insert: {
+          completion_status?: string | null
           created_at?: string | null
           date: string
+          expected_photos?: number | null
           id?: string
           location: string
           name: string
           photographer_id: string
+          satisfaction_rating?: number | null
           type?: Database["public"]["Enums"]["event_type"] | null
           updated_at?: string | null
         }
         Update: {
+          completion_status?: string | null
           created_at?: string | null
           date?: string
+          expected_photos?: number | null
           id?: string
           location?: string
           name?: string
           photographer_id?: string
+          satisfaction_rating?: number | null
           type?: Database["public"]["Enums"]["event_type"] | null
           updated_at?: string | null
         }
@@ -183,6 +192,47 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      photographer_statistics: {
+        Row: {
+          avg_photos_per_event: number | null
+          completion_rate: number | null
+          created_at: string | null
+          events_created: number | null
+          id: string
+          month_year: string
+          photographer_id: string
+          photos_uploaded: number | null
+        }
+        Insert: {
+          avg_photos_per_event?: number | null
+          completion_rate?: number | null
+          created_at?: string | null
+          events_created?: number | null
+          id?: string
+          month_year: string
+          photographer_id: string
+          photos_uploaded?: number | null
+        }
+        Update: {
+          avg_photos_per_event?: number | null
+          completion_rate?: number | null
+          created_at?: string | null
+          events_created?: number | null
+          id?: string
+          month_year?: string
+          photographer_id?: string
+          photos_uploaded?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photographer_statistics_photographer_id_fkey"
+            columns: ["photographer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
