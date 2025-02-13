@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Line } from "recharts";
@@ -31,14 +30,33 @@ const Dashboard = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return null;
 
-      const { data, error } = await supabase
+      // First try to get the existing profile
+      const { data: existingProfile, error: fetchError } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", session.user.id)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
-      return data;
+      if (fetchError) throw fetchError;
+
+      // If profile doesn't exist, create it
+      if (!existingProfile) {
+        const { data: newProfile, error: insertError } = await supabase
+          .from("profiles")
+          .insert([
+            { 
+              id: session.user.id,
+              role: 'photographer',
+            }
+          ])
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        return newProfile;
+      }
+
+      return existingProfile;
     },
   });
 
