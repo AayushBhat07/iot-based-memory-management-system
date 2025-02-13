@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Line } from "recharts";
@@ -61,7 +60,7 @@ const Dashboard = () => {
     },
   });
 
-  // Fetch statistics
+  // Fetch statistics with demo data fallback
   const { data: statistics } = useQuery({
     queryKey: ["photographer-statistics"],
     queryFn: async () => {
@@ -76,6 +75,25 @@ const Dashboard = () => {
         .limit(12);
 
       if (error) throw error;
+      
+      // If no data, return demo data
+      if (!data || data.length === 0) {
+        const currentDate = new Date();
+        const demoData = [];
+        for (let i = 0; i < 12; i++) {
+          const date = new Date(currentDate);
+          date.setMonth(date.getMonth() - i);
+          demoData.push({
+            month_year: date.toISOString().slice(0, 7), // Format: YYYY-MM
+            events_created: Math.floor(Math.random() * 8) + 2, // Random number between 2-10
+            photos_uploaded: Math.floor(Math.random() * 200) + 100, // Random number between 100-300
+            completion_rate: Math.floor(Math.random() * 30) + 70, // Random number between 70-100
+            avg_photos_per_event: Math.floor(Math.random() * 30) + 20, // Random number between 20-50
+          });
+        }
+        return demoData;
+      }
+
       return data;
     },
   });
@@ -99,10 +117,13 @@ const Dashboard = () => {
     },
   });
 
-  const chartData = statistics?.map(stat => ({
-    date: stat.month_year,
-    events: stat.events_created,
-  })) || [];
+  const chartData = (statistics || [])
+    .slice()
+    .reverse()
+    .map(stat => ({
+      date: stat.month_year,
+      events: stat.events_created,
+    }));
 
   return (
     <div className="min-h-screen bg-background">
@@ -167,13 +188,13 @@ const Dashboard = () => {
                   }
                 }}
               >
-                {/* Wrap Line component in a React.Fragment to satisfy type requirements */}
                 <>
                   <Line
                     data={chartData}
                     dataKey="events"
                     type="monotone"
                     dot={false}
+                    strokeWidth={2}
                   />
                   <ChartTooltip />
                 </>
