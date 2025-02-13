@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Line } from "recharts";
@@ -89,8 +90,7 @@ const Dashboard = () => {
       const { data, error } = await supabase
         .from("events")
         .select("*")
-        .eq("photographer_id", session.user.id)
-        .gte("date", new Date().toISOString())
+        .gte("date", new Date().toISOString().split('T')[0])  // Use only the date part
         .order("date", { ascending: true })
         .limit(4);
 
