@@ -93,7 +93,7 @@ const Dashboard = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="text-3xl font-bold">{profile?.name || "Photographer"}</h1>
+              <h1 className="text-3xl font-bold">Photographer Dashboard</h1>
               <p className="text-muted-foreground">
                 Member since {formatDate(profile?.created_at || new Date())}
               </p>
@@ -141,19 +141,24 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
-              <ChartContainer config={{
-                events: {
-                  label: "Events Created",
-                  color: "#9b87f5"
-                }
-              }}>
-                <Line
-                  data={chartData}
-                  dataKey="events"
-                  type="monotone"
-                  dot={false}
-                />
-                <ChartTooltip />
+              <ChartContainer 
+                config={{
+                  events: {
+                    label: "Events Created",
+                    color: "#9b87f5"
+                  }
+                }}
+              >
+                {/* Wrap Line component in a React.Fragment to satisfy type requirements */}
+                <>
+                  <Line
+                    data={chartData}
+                    dataKey="events"
+                    type="monotone"
+                    dot={false}
+                  />
+                  <ChartTooltip />
+                </>
               </ChartContainer>
             </div>
           </CardContent>
