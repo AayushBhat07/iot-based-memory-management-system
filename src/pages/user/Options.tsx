@@ -20,6 +20,15 @@ const messages = [
   "💫 Tell us about that unforgettable moment!"
 ];
 
+// Define corner positions
+const cornerPositions = [
+  { x: -40, y: 10 },    // Top left
+  { x: 40, y: 10 },     // Top right
+  { x: -40, y: 70 },    // Bottom left
+  { x: 40, y: 70 },     // Bottom right
+  { x: 0, y: 40 },      // Center
+];
+
 const UserOptions = () => {
   const { scrollYProgress } = useScroll();
   const [floatingMessages, setFloatingMessages] = useState<FloatingMessage[]>([]);
@@ -27,14 +36,22 @@ const UserOptions = () => {
   const backgroundY = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
 
   useEffect(() => {
-    // Create floating messages with random positions and durations
-    const newMessages = messages.map((text, index) => ({
-      id: index,
-      text,
-      initialX: Math.random() * 60 - 30, // -30 to 30
-      initialY: Math.random() * 40 + 20, // 20 to 60
-      duration: Math.random() * 4 + 8 // 8 to 12 seconds
-    }));
+    // Create floating messages with corner-based positions
+    const newMessages = messages.map((text, index) => {
+      const position = cornerPositions[index % cornerPositions.length];
+      const randomOffset = {
+        x: position.x + (Math.random() * 10 - 5), // Add small random offset
+        y: position.y + (Math.random() * 10 - 5)
+      };
+      
+      return {
+        id: index,
+        text,
+        initialX: randomOffset.x,
+        initialY: randomOffset.y,
+        duration: Math.random() * 4 + 8 // 8 to 12 seconds
+      };
+    });
     setFloatingMessages(newMessages);
   }, []);
 
@@ -67,14 +84,19 @@ const UserOptions = () => {
         <motion.div
           key={message.id}
           className="absolute hidden lg:block"
+          style={{
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)'
+          }}
           initial={{ 
-            x: `${message.initialX}%`,
-            y: `${message.initialY}%`,
+            x: `${message.initialX}vw`,
+            y: `${message.initialY}vh`,
             opacity: 0 
           }}
           animate={{ 
-            x: [`${message.initialX}%`, `${message.initialX + 20}%`, `${message.initialX}%`],
-            y: [`${message.initialY}%`, `${message.initialY - 10}%`, `${message.initialY}%`],
+            x: [`${message.initialX}vw`, `${message.initialX + 10}vw`, `${message.initialX}vw`],
+            y: [`${message.initialY}vh`, `${message.initialY - 5}vh`, `${message.initialY}vh`],
             opacity: [0, 1, 0]
           }}
           transition={{
