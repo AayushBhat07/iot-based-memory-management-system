@@ -97,19 +97,20 @@ const PhotographerPortfolio = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
-      {/* Header Section */}
-      <header className="container mx-auto px-4 py-16 text-center">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
+      {/* Header Section - Reduced to 20% */}
+      <header className="container mx-auto px-4 py-6 text-center h-[20vh]">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-5xl md:text-6xl font-playfair mb-16 text-white"
+          className="text-4xl md:text-5xl font-playfair mb-6 bg-gradient-to-r from-primary via-primary/80 to-primary/60 
+                     bg-clip-text text-transparent"
         >
           John Doe Photography
         </motion.h1>
 
         {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-3 gap-4 max-w-4xl mx-auto">
           {/* Years Experience */}
           <motion.div
             initial={{ scale: 0 }}
@@ -117,10 +118,10 @@ const PhotographerPortfolio = () => {
             transition={{ delay: 0.2 }}
             className="flex flex-col items-center"
           >
-            <div className="w-32 h-32 rounded-full bg-white/10 flex items-center justify-center mb-4">
-              <div className="text-3xl font-bold text-white">{yearsCount}</div>
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+              <div className="text-xl font-bold text-primary">{yearsCount}</div>
             </div>
-            <span className="text-white/80">Years of Experience</span>
+            <span className="text-sm text-muted-foreground">Years</span>
           </motion.div>
 
           {/* Events Completed */}
@@ -130,10 +131,10 @@ const PhotographerPortfolio = () => {
             transition={{ delay: 0.4 }}
             className="flex flex-col items-center"
           >
-            <div className="w-32 h-32 rounded-full bg-white/10 flex items-center justify-center mb-4">
-              <div className="text-3xl font-bold text-white">{eventsCount}</div>
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+              <div className="text-xl font-bold text-primary">{eventsCount}</div>
             </div>
-            <span className="text-white/80">Events Completed</span>
+            <span className="text-sm text-muted-foreground">Events</span>
           </motion.div>
 
           {/* Specialization */}
@@ -143,36 +144,38 @@ const PhotographerPortfolio = () => {
             transition={{ delay: 0.6 }}
             className="flex flex-col items-center"
           >
-            <div className="w-32 h-32 rounded-full bg-white/10 flex items-center justify-center mb-4">
-              <Camera className="w-12 h-12 text-white" />
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+              <Camera className="w-6 h-6 text-primary" />
             </div>
-            <span className="text-white/80">Wedding Specialist</span>
+            <span className="text-sm text-muted-foreground">Wedding</span>
           </motion.div>
         </div>
       </header>
 
-      {/* Portfolio Slideshow Section */}
-      <div className="relative w-full bg-gray-900 py-12">
-        <div className="container mx-auto px-4">
+      {/* Portfolio Slideshow Section - Reduced to 40% width */}
+      <div className="w-full py-6">
+        <div className="container mx-auto px-4 max-w-[40%]">
           <div
-            className="relative"
+            className="relative glass-card p-4 rounded-xl"
             onMouseEnter={() => setIsAutoPlaying(false)}
             onMouseLeave={() => setIsAutoPlaying(true)}
           >
             {/* Navigation Arrows */}
             <button
-              onClick={previousImage}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 p-2 rounded-full
-                       hover:bg-black/70 transition-colors"
+              onClick={() => setCurrentImageIndex((prev) => 
+                prev === 0 ? portfolioImages.length - 1 : prev - 1
+              )}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-background/50 p-2 rounded-full
+                       hover:bg-background/70 transition-colors"
             >
-              <ChevronLeft className="w-6 h-6 text-white" />
+              <ChevronLeft className="w-6 h-6 text-primary" />
             </button>
             <button
-              onClick={nextImage}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 p-2 rounded-full
-                       hover:bg-black/70 transition-colors"
+              onClick={() => setCurrentImageIndex((prev) => (prev + 1) % portfolioImages.length)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-background/50 p-2 rounded-full
+                       hover:bg-background/70 transition-colors"
             >
-              <ChevronRight className="w-6 h-6 text-white" />
+              <ChevronRight className="w-6 h-6 text-primary" />
             </button>
 
             {/* Images */}
@@ -193,16 +196,16 @@ const PhotographerPortfolio = () => {
               </AspectRatio>
 
               {/* Image Caption */}
-              <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-4">
-                <h3 className="text-xl font-semibold">
+              <div className="absolute bottom-0 left-0 right-0 bg-background/60 backdrop-blur-sm p-4">
+                <h3 className="text-lg font-semibold text-foreground">
                   {portfolioImages[currentImageIndex].title}
                 </h3>
                 <div className="flex items-center gap-4 text-sm mt-2">
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1 text-muted-foreground">
                     <Calendar className="w-4 h-4" />
                     {portfolioImages[currentImageIndex].year}
                   </span>
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1 text-muted-foreground">
                     <Award className="w-4 h-4" />
                     {portfolioImages[currentImageIndex].eventType}
                   </span>
@@ -225,7 +228,7 @@ const PhotographerPortfolio = () => {
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}
                   className={`w-2 h-2 rounded-full transition-colors ${
-                    index === currentImageIndex ? "bg-white" : "bg-white/30"
+                    index === currentImageIndex ? "bg-primary" : "bg-primary/30"
                   }`}
                 />
               ))}
