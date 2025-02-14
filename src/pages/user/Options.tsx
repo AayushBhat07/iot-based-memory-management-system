@@ -20,13 +20,13 @@ const messages = [
   "💫 Tell us about that unforgettable moment!"
 ];
 
-// Define corner positions focusing on lower half
+// Define corner positions
 const cornerPositions = [
-  { x: -40, y: 40 },    // Mid-left
-  { x: 40, y: 50 },     // Mid-right
-  { x: -20, y: 60 },    // Bottom-left
-  { x: 20, y: 70 },     // Bottom-right
-  { x: 0, y: 55 },      // Center-bottom
+  { x: -40, y: 10 },    // Top left
+  { x: 40, y: 10 },     // Top right
+  { x: -40, y: 70 },    // Bottom left
+  { x: 40, y: 70 },     // Bottom right
+  { x: 0, y: 40 },      // Center
 ];
 
 const UserOptions = () => {
@@ -49,7 +49,7 @@ const UserOptions = () => {
         text,
         initialX: randomOffset.x,
         initialY: randomOffset.y,
-        duration: Math.random() * 5 + 15 // 15 to 20 seconds
+        duration: Math.random() * 4 + 8 // 8 to 12 seconds
       };
     });
     setFloatingMessages(newMessages);
@@ -79,44 +79,42 @@ const UserOptions = () => {
         </div>
       </div>
 
-      {/* Floating Messages Container */}
-      <div className="absolute inset-0 pointer-events-none">
-        {floatingMessages.map((message) => (
-          <motion.div
-            key={message.id}
-            className="absolute hidden lg:block"
-            style={{
-              left: `${50 + message.initialX}%`,
-              top: `${50 + message.initialY}%`,
-            }}
-            initial={{ 
-              opacity: 0,
-              scale: 0.9
-            }}
-            animate={{ 
-              x: [0, 20, 0],
-              y: [0, -10, 0],
-              opacity: [0, 1, 1, 1, 1, 1, 0],
-              scale: 1
-            }}
-            transition={{
-              duration: message.duration,
-              times: [0, 0.1, 0.2, 0.4, 0.6, 0.8, 1],
-              repeat: Infinity,
-              repeatType: "reverse",
-              ease: "easeInOut"
-            }}
-          >
-            <div className="max-w-sm p-4 rounded-lg backdrop-blur-md bg-white/80 dark:bg-gray-800/80 
-                          shadow-[0_8px_16px_rgba(0,0,0,0.1)] border border-white/20
-                          transform transition-transform duration-300 hover:scale-105">
-              <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">
-                {message.text}
-              </p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      {/* Floating Messages */}
+      {floatingMessages.map((message) => (
+        <motion.div
+          key={message.id}
+          className="absolute hidden lg:block"
+          style={{
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)'
+          }}
+          initial={{ 
+            x: `${message.initialX}vw`,
+            y: `${message.initialY}vh`,
+            opacity: 0 
+          }}
+          animate={{ 
+            x: [`${message.initialX}vw`, `${message.initialX + 10}vw`, `${message.initialX}vw`],
+            y: [`${message.initialY}vh`, `${message.initialY - 5}vh`, `${message.initialY}vh`],
+            opacity: [0, 1, 0]
+          }}
+          transition={{
+            duration: message.duration,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut"
+          }}
+        >
+          <div className="max-w-sm p-4 rounded-lg backdrop-blur-md bg-white/80 dark:bg-gray-800/80 
+                        shadow-[0_8px_16px_rgba(0,0,0,0.1)] border border-white/20
+                        transform transition-transform duration-300 hover:scale-105">
+            <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">
+              {message.text}
+            </p>
+          </div>
+        </motion.div>
+      ))}
 
       <div className="container max-w-4xl relative z-10">
         <motion.h1 
