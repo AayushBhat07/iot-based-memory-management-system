@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Camera, Calendar, Award } from "lucide-react";
@@ -140,9 +141,9 @@ const PhotographerPortfolio = () => {
       </header>
 
       <div className="w-full">
-        <div className="container mx-auto px-4 max-w-[40%] mt-[10vh]">
+        <div className="container mx-auto px-4 mt-[10vh]">
           <div
-            className="relative glass-card p-4 rounded-xl"
+            className="relative glass-card p-4 rounded-xl max-w-4xl mx-auto"
             onMouseEnter={() => setIsAutoPlaying(false)}
             onMouseLeave={() => setIsAutoPlaying(true)}
           >
