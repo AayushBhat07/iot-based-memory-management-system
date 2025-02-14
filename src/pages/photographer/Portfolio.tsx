@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Camera, Calendar, Award } from "lucide-react";
@@ -98,7 +97,6 @@ const PhotographerPortfolio = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
-      {/* Header Section - Reduced to 20% */}
       <header className="container mx-auto px-4 py-6 text-center h-[20vh]">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
@@ -109,58 +107,45 @@ const PhotographerPortfolio = () => {
           John Doe Photography
         </motion.h1>
 
-        {/* Stats Section */}
         <div className="grid grid-cols-3 gap-4 max-w-4xl mx-auto">
-          {/* Years Experience */}
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="flex flex-col items-center"
+            className="col-span-3 bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/20
+                      shadow-lg flex justify-between items-center"
           >
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <div className="text-xl font-bold text-primary">{yearsCount}</div>
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                <div className="text-xl font-bold text-primary">{yearsCount}</div>
+              </div>
+              <span className="text-sm text-muted-foreground">Years</span>
             </div>
-            <span className="text-sm text-muted-foreground">Years</span>
-          </motion.div>
 
-          {/* Events Completed */}
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.4 }}
-            className="flex flex-col items-center"
-          >
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <div className="text-xl font-bold text-primary">{eventsCount}</div>
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                <div className="text-xl font-bold text-primary">{eventsCount}</div>
+              </div>
+              <span className="text-sm text-muted-foreground">Events</span>
             </div>
-            <span className="text-sm text-muted-foreground">Events</span>
-          </motion.div>
 
-          {/* Specialization */}
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.6 }}
-            className="flex flex-col items-center"
-          >
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Camera className="w-6 h-6 text-primary" />
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                <Camera className="w-6 h-6 text-primary" />
+              </div>
+              <span className="text-sm text-muted-foreground">Wedding</span>
             </div>
-            <span className="text-sm text-muted-foreground">Wedding</span>
           </motion.div>
         </div>
       </header>
 
-      {/* Portfolio Slideshow Section - Reduced to 40% width */}
-      <div className="w-full py-6">
-        <div className="container mx-auto px-4 max-w-[40%]">
+      <div className="w-full">
+        <div className="container mx-auto px-4 max-w-[40%] mt-[10vh]">
           <div
             className="relative glass-card p-4 rounded-xl"
             onMouseEnter={() => setIsAutoPlaying(false)}
             onMouseLeave={() => setIsAutoPlaying(true)}
           >
-            {/* Navigation Arrows */}
             <button
               onClick={() => setCurrentImageIndex((prev) => 
                 prev === 0 ? portfolioImages.length - 1 : prev - 1
@@ -178,7 +163,6 @@ const PhotographerPortfolio = () => {
               <ChevronRight className="w-6 h-6 text-primary" />
             </button>
 
-            {/* Images */}
             <div className="relative overflow-hidden rounded-lg">
               <AspectRatio ratio={16 / 9}>
                 <AnimatePresence mode="wait">
@@ -195,7 +179,6 @@ const PhotographerPortfolio = () => {
                 </AnimatePresence>
               </AspectRatio>
 
-              {/* Image Caption */}
               <div className="absolute bottom-0 left-0 right-0 bg-background/60 backdrop-blur-sm p-4">
                 <h3 className="text-lg font-semibold text-foreground">
                   {portfolioImages[currentImageIndex].title}
@@ -213,7 +196,6 @@ const PhotographerPortfolio = () => {
               </div>
             </div>
 
-            {/* Progress Bar */}
             <div className="mt-4">
               <Progress 
                 value={((currentImageIndex + 1) / portfolioImages.length) * 100} 
@@ -221,7 +203,6 @@ const PhotographerPortfolio = () => {
               />
             </div>
 
-            {/* Navigation Dots */}
             <div className="flex justify-center gap-2 mt-4">
               {portfolioImages.map((_, index) => (
                 <button
