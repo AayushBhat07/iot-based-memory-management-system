@@ -20,13 +20,13 @@ const messages = [
   "💫 Tell us about that unforgettable moment!"
 ];
 
-// Define corner positions
+// Define corner positions focusing on lower half
 const cornerPositions = [
-  { x: -40, y: 10 },    // Top left
-  { x: 40, y: 10 },     // Top right
-  { x: -40, y: 70 },    // Bottom left
-  { x: 40, y: 70 },     // Bottom right
-  { x: 0, y: 40 },      // Center
+  { x: -40, y: 40 },    // Mid-left
+  { x: 40, y: 50 },     // Mid-right
+  { x: -20, y: 60 },    // Bottom-left
+  { x: 20, y: 70 },     // Bottom-right
+  { x: 0, y: 55 },      // Center-bottom
 ];
 
 const UserOptions = () => {
