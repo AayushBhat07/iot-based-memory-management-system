@@ -109,16 +109,63 @@ const EditProfile = () => {
         return;
       }
 
+      // First try to get the existing profile
       const { data: profile, error } = await supabase
         .from("photographer_profiles")
         .select("*")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
 
-      if (profile) {
-        form.reset(profile);
+      if (!profile) {
+        // Create a new profile if none exists
+        const { data: newProfile, error: insertError } = await supabase
+          .from("photographer_profiles")
+          .insert([{ id: user.id }])
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        
+        // Set defaults for the new profile
+        form.reset({
+          full_name: "",
+          professional_title: "",
+          location: "",
+          contact_email: "",
+          phone: "",
+          website_url: "",
+          bio: "",
+          instagram_url: "",
+          linkedin_url: "",
+          facebook_url: "",
+          twitter_url: "",
+          specialties: [],
+          years_experience: 0,
+          events_completed: 0,
+        });
+        setProfileCompletion(0);
+      } else {
+        // Reset form with existing profile data
+        form.reset({
+          full_name: profile.full_name || "",
+          professional_title: profile.professional_title || "",
+          location: profile.location || "",
+          contact_email: profile.contact_email || "",
+          phone: profile.phone || "",
+          website_url: profile.website_url || "",
+          bio: profile.bio || "",
+          instagram_url: profile.instagram_url || "",
+          linkedin_url: profile.linkedin_url || "",
+          facebook_url: profile.facebook_url || "",
+          twitter_url: profile.twitter_url || "",
+          specialties: profile.specialties || [],
+          years_experience: profile.years_experience || 0,
+          events_completed: profile.events_completed || 0,
+        });
         setAvatarUrl(profile.avatar_url);
         setCoverPhotoUrl(profile.cover_photo_url);
         calculateProfileCompletion(profile);
