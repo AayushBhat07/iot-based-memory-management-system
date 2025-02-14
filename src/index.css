@@ -61,9 +61,32 @@
 }
 
 .glass-card {
-  @apply bg-white/90 backdrop-blur-lg border border-white/20 shadow-xl;
+  @apply bg-white/10 backdrop-blur-md border border-white/20 
+         shadow-[0_8px_32px_rgba(0,0,0,0.12)];
+}
+
+.glass-card-hover {
+  @apply bg-white/15 border-white/30 
+         shadow-[0_8px_32px_rgba(0,0,0,0.15)]
+         scale-[1.02] -translate-y-1;
 }
 
 .hover-card {
   @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.floating {
+  animation: float 6s ease-in-out infinite;
 }
