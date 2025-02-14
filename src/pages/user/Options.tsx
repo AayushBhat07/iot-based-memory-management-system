@@ -49,7 +49,7 @@ const UserOptions = () => {
         text,
         initialX: randomOffset.x,
         initialY: randomOffset.y,
-        duration: Math.random() * 4 + 8 // 8 to 12 seconds
+        duration: Math.random() * 5 + 15 // 15 to 20 seconds
       };
     });
     setFloatingMessages(newMessages);
@@ -97,10 +97,11 @@ const UserOptions = () => {
           animate={{ 
             x: [`${message.initialX}vw`, `${message.initialX + 10}vw`, `${message.initialX}vw`],
             y: [`${message.initialY}vh`, `${message.initialY - 5}vh`, `${message.initialY}vh`],
-            opacity: [0, 1, 0]
+            opacity: [0, 1, 1, 1, 1, 1, 0] // Longer duration at full opacity
           }}
           transition={{
             duration: message.duration,
+            times: [0, 0.1, 0.2, 0.4, 0.6, 0.8, 1], // Controls when each keyframe happens
             repeat: Infinity,
             repeatType: "reverse",
             ease: "easeInOut"
