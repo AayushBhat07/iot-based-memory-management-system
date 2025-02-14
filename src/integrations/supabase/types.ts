@@ -196,6 +196,75 @@ export type Database = {
           },
         ]
       }
+      photographer_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          contact_email: string | null
+          cover_photo_url: string | null
+          created_at: string | null
+          events_completed: number | null
+          facebook_url: string | null
+          full_name: string | null
+          id: string
+          instagram_url: string | null
+          linkedin_url: string | null
+          location: string | null
+          phone: string | null
+          professional_title: string | null
+          profile_completion: number | null
+          specialties: string[] | null
+          twitter_url: string | null
+          updated_at: string | null
+          website_url: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          contact_email?: string | null
+          cover_photo_url?: string | null
+          created_at?: string | null
+          events_completed?: number | null
+          facebook_url?: string | null
+          full_name?: string | null
+          id: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          phone?: string | null
+          professional_title?: string | null
+          profile_completion?: number | null
+          specialties?: string[] | null
+          twitter_url?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          contact_email?: string | null
+          cover_photo_url?: string | null
+          created_at?: string | null
+          events_completed?: number | null
+          facebook_url?: string | null
+          full_name?: string | null
+          id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          phone?: string | null
+          professional_title?: string | null
+          profile_completion?: number | null
+          specialties?: string[] | null
+          twitter_url?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
       photographer_statistics: {
         Row: {
           avg_photos_per_event: number | null
