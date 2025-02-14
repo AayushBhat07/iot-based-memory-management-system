@@ -1,6 +1,6 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Upload, Search } from "lucide-react";
+import { Upload, Search, Camera } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -127,7 +127,7 @@ const UserOptions = () => {
           What would you like to do?
         </motion.h1>
         
-        <div className="grid md:grid-cols-2 gap-8 p-4">
+        <div className="grid md:grid-cols-3 gap-8 p-4">
           {/* Upload Reference Photo Box */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -183,6 +183,36 @@ const UserOptions = () => {
                 </h2>
                 <p className="text-muted-foreground">
                   Browse through our galleries and find photos that match your reference
+                </p>
+              </div>
+            </Link>
+          </motion.div>
+
+          {/* View Photographer Portfolio Box */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.6 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Link 
+              to="/photographer/portfolio"
+              className="block h-full"
+            >
+              <div className="h-full p-8 rounded-2xl glass-card hover:glass-card-hover
+                            transform transition-all duration-500 ease-out">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-6
+                              transform transition-all duration-300 group-hover:scale-110
+                              hover:rotate-12">
+                  <Camera className="h-6 w-6 text-primary" />
+                </div>
+                <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-br from-primary to-primary/70 
+                             bg-clip-text text-transparent">
+                  View Portfolio
+                </h2>
+                <p className="text-muted-foreground">
+                  Explore our photographer's stunning portfolio and previous work
                 </p>
               </div>
             </Link>
