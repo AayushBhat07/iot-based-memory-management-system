@@ -236,7 +236,7 @@ const Dashboard = () => {
           <QuickActionCard
             icon={Edit}
             title="Edit Profile"
-            onClick={() => {/* TODO: Implement edit profile */}}
+            onClick={() => navigate("/photographer/edit-profile")}
           />
           <QuickActionCard
             icon={List}
@@ -246,7 +246,7 @@ const Dashboard = () => {
           <QuickActionCard
             icon={Image}
             title="Manage Portfolio"
-            onClick={() => {/* TODO: Implement manage portfolio */}}
+            onClick={() => navigate("/photographer/portfolio")}
           />
           <QuickActionCard
             icon={Settings}
