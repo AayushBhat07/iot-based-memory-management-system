@@ -1,9 +1,7 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { useQuery } from "@tanstack/react-query";
-import { Calendar, Edit, Settings, Image, List, Plus } from "lucide-react";
+import { Calendar, Edit, Settings, Image, List, Plus, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -117,13 +115,10 @@ const Dashboard = () => {
     },
   });
 
-  const chartData = (statistics || [])
-    .slice()
-    .reverse()
-    .map(stat => ({
-      date: stat.month_year,
-      events: stat.events_created,
-    }));
+  const lastThreeMonths = (statistics || []).slice(0, 3);
+  const calculateTrend = (current: number, previous: number) => {
+    return ((current - previous) / previous) * 100;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -173,42 +168,42 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* Chart */}
+        {/* Events Overview */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle>Events Overview</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <Line
-                  data={chartData}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="date"
-                    tickFormatter={(value) => {
-                      const date = new Date(value);
-                      return date.toLocaleDateString('default', { month: 'short' });
-                    }}
-                  />
-                  <YAxis />
-                  <Tooltip
-                    labelFormatter={(value) => {
-                      const date = new Date(value);
-                      return date.toLocaleDateString('default', { month: 'long', year: 'numeric' });
-                    }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="events" 
-                    stroke="#9b87f5" 
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </Line>
-              </ResponsiveContainer>
+            <div className="grid gap-6 md:grid-cols-3">
+              {lastThreeMonths.map((stat, index) => {
+                const prevMonth = lastThreeMonths[index + 1];
+                const trend = prevMonth 
+                  ? calculateTrend(stat.events_created, prevMonth.events_created)
+                  : 0;
+
+                return (
+                  <Card key={stat.month_year} className="border-none shadow-none bg-muted/30">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">
+                            {new Date(stat.month_year).toLocaleDateString('default', { month: 'long', year: 'numeric' })}
+                          </p>
+                          <h3 className="text-2xl font-bold mt-1">
+                            {stat.events_created} Events
+                          </h3>
+                          {prevMonth && (
+                            <p className={`text-sm mt-1 flex items-center gap-1 ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {trend >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                              {Math.abs(trend).toFixed(1)}% from previous month
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
