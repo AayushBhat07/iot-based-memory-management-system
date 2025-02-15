@@ -4,7 +4,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useProcessFace } from "@/lib/api/face-recognition";
 import { Button } from "@/components/ui/button";
 import { Upload, Loader2 } from "lucide-react";
-import Image from "@/components/ui/image";
 
 export interface FaceUploadProps {
   onUploadComplete?: (imageId: string) => void;
