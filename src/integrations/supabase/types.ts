@@ -479,6 +479,21 @@ export type Database = {
             }
             Returns: unknown
           }
+      find_similar_faces: {
+        Args: {
+          reference_embedding: string
+          similarity_threshold?: number
+          max_results?: number
+        }
+        Returns: {
+          id: string
+          image_path: string
+          similarity: number
+          confidence_score: number
+          created_at: string
+          metadata: Json
+        }[]
+      }
       halfvec_avg: {
         Args: {
           "": number[]
