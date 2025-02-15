@@ -42,24 +42,24 @@ serve(async (req) => {
       )
     }
 
-    // Find similar faces using cosine similarity
-    const { data: matches, error: matchError } = await supabase
-      .rpc('find_similar_faces', {
+    // Find matches in photographer photos
+    const { data: photographerMatches, error: photographerMatchError } = await supabase
+      .rpc('find_matches_in_photographer_photos', {
         reference_embedding: referenceData.embedding,
         similarity_threshold: threshold,
         max_results: limit
       })
 
-    if (matchError) {
-      console.error('Match error:', matchError)
+    if (photographerMatchError) {
+      console.error('Photographer match error:', photographerMatchError)
       return new Response(
-        JSON.stringify({ error: 'Failed to find matches' }),
+        JSON.stringify({ error: 'Failed to find matches in photographer photos' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       )
     }
 
     // Store match results
-    const matchPromises = matches.map(match => 
+    const matchPromises = photographerMatches.map(match => 
       supabase.from('face_matches').insert({
         user_id: referenceData.user_id,
         reference_embedding_id: referenceImageId,
@@ -68,7 +68,9 @@ serve(async (req) => {
         confidence_score: match.confidence_score,
         match_metadata: {
           matched_at: new Date().toISOString(),
-          processing_time_ms: Date.now() - new Date(match.created_at).getTime()
+          processing_time_ms: Date.now() - new Date(match.created_at).getTime(),
+          event_id: match.event_id,
+          source: 'photographer_uploads'
         }
       })
     )
@@ -77,9 +79,9 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
-        matches,
+        matches: photographerMatches,
         processingTime: Date.now(),
-        totalMatches: matches.length
+        totalMatches: photographerMatches.length
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

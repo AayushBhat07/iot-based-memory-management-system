@@ -274,6 +274,44 @@ export type Database = {
           },
         ]
       }
+      photographer_photo_embeddings: {
+        Row: {
+          confidence_score: number
+          created_at: string | null
+          embedding: string | null
+          event_id: string | null
+          id: string
+          metadata: Json | null
+          photo_path: string
+        }
+        Insert: {
+          confidence_score: number
+          created_at?: string | null
+          embedding?: string | null
+          event_id?: string | null
+          id?: string
+          metadata?: Json | null
+          photo_path: string
+        }
+        Update: {
+          confidence_score?: number
+          created_at?: string | null
+          embedding?: string | null
+          event_id?: string | null
+          id?: string
+          metadata?: Json | null
+          photo_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photographer_photo_embeddings_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       photographer_profiles: {
         Row: {
           avatar_url: string | null
@@ -479,6 +517,22 @@ export type Database = {
             }
             Returns: unknown
           }
+      find_matches_in_photographer_photos: {
+        Args: {
+          reference_embedding: string
+          similarity_threshold?: number
+          max_results?: number
+        }
+        Returns: {
+          id: string
+          photo_path: string
+          event_id: string
+          similarity: number
+          confidence_score: number
+          created_at: string
+          metadata: Json
+        }[]
+      }
       find_similar_faces: {
         Args: {
           reference_embedding: string
