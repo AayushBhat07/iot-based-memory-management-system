@@ -1,8 +1,2 @@
 
 project_id = "gyswblkrrbsnunfarudj"
-
-[functions.process-face]
-verify_jwt = false
-
-[functions.find-matches]
-verify_jwt = true
