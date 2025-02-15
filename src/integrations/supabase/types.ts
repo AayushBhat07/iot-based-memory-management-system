@@ -95,6 +95,84 @@ export type Database = {
           },
         ]
       }
+      face_embeddings: {
+        Row: {
+          confidence_score: number
+          created_at: string | null
+          embedding: string
+          id: string
+          image_path: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          confidence_score: number
+          created_at?: string | null
+          embedding: string
+          id?: string
+          image_path: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          confidence_score?: number
+          created_at?: string | null
+          embedding?: string
+          id?: string
+          image_path?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      face_matches: {
+        Row: {
+          confidence_score: number
+          created_at: string | null
+          id: string
+          match_metadata: Json | null
+          matched_embedding_id: string
+          reference_embedding_id: string
+          similarity_score: number
+          user_id: string
+        }
+        Insert: {
+          confidence_score: number
+          created_at?: string | null
+          id?: string
+          match_metadata?: Json | null
+          matched_embedding_id: string
+          reference_embedding_id: string
+          similarity_score: number
+          user_id: string
+        }
+        Update: {
+          confidence_score?: number
+          created_at?: string | null
+          id?: string
+          match_metadata?: Json | null
+          matched_embedding_id?: string
+          reference_embedding_id?: string
+          similarity_score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "face_matches_matched_embedding_id_fkey"
+            columns: ["matched_embedding_id"]
+            isOneToOne: false
+            referencedRelation: "face_embeddings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "face_matches_reference_embedding_id_fkey"
+            columns: ["reference_embedding_id"]
+            isOneToOne: false
+            referencedRelation: "face_embeddings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           confidence: number | null
@@ -388,7 +466,178 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      binary_quantize:
+        | {
+            Args: {
+              "": string
+            }
+            Returns: unknown
+          }
+        | {
+            Args: {
+              "": unknown
+            }
+            Returns: unknown
+          }
+      halfvec_avg: {
+        Args: {
+          "": number[]
+        }
+        Returns: unknown
+      }
+      halfvec_out: {
+        Args: {
+          "": unknown
+        }
+        Returns: unknown
+      }
+      halfvec_send: {
+        Args: {
+          "": unknown
+        }
+        Returns: string
+      }
+      halfvec_typmod_in: {
+        Args: {
+          "": unknown[]
+        }
+        Returns: number
+      }
+      hnsw_bit_support: {
+        Args: {
+          "": unknown
+        }
+        Returns: unknown
+      }
+      hnsw_halfvec_support: {
+        Args: {
+          "": unknown
+        }
+        Returns: unknown
+      }
+      hnsw_sparsevec_support: {
+        Args: {
+          "": unknown
+        }
+        Returns: unknown
+      }
+      hnswhandler: {
+        Args: {
+          "": unknown
+        }
+        Returns: unknown
+      }
+      ivfflat_bit_support: {
+        Args: {
+          "": unknown
+        }
+        Returns: unknown
+      }
+      ivfflat_halfvec_support: {
+        Args: {
+          "": unknown
+        }
+        Returns: unknown
+      }
+      ivfflathandler: {
+        Args: {
+          "": unknown
+        }
+        Returns: unknown
+      }
+      l2_norm:
+        | {
+            Args: {
+              "": unknown
+            }
+            Returns: number
+          }
+        | {
+            Args: {
+              "": unknown
+            }
+            Returns: number
+          }
+      l2_normalize:
+        | {
+            Args: {
+              "": string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              "": unknown
+            }
+            Returns: unknown
+          }
+        | {
+            Args: {
+              "": unknown
+            }
+            Returns: unknown
+          }
+      sparsevec_out: {
+        Args: {
+          "": unknown
+        }
+        Returns: unknown
+      }
+      sparsevec_send: {
+        Args: {
+          "": unknown
+        }
+        Returns: string
+      }
+      sparsevec_typmod_in: {
+        Args: {
+          "": unknown[]
+        }
+        Returns: number
+      }
+      vector_avg: {
+        Args: {
+          "": number[]
+        }
+        Returns: string
+      }
+      vector_dims:
+        | {
+            Args: {
+              "": string
+            }
+            Returns: number
+          }
+        | {
+            Args: {
+              "": unknown
+            }
+            Returns: number
+          }
+      vector_norm: {
+        Args: {
+          "": string
+        }
+        Returns: number
+      }
+      vector_out: {
+        Args: {
+          "": string
+        }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: {
+          "": string
+        }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: {
+          "": unknown[]
+        }
+        Returns: number
+      }
     }
     Enums: {
       event_type:
