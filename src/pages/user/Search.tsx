@@ -49,7 +49,6 @@ const UserSearch = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
-  // Autoplay functionality
   useEffect(() => {
     if (!isAutoPlaying || !selectedUser) return;
 
@@ -94,6 +93,12 @@ const UserSearch = () => {
 
         {selectedUser && (
           <div className="max-w-4xl mx-auto mt-8">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-semibold bg-gradient-to-r from-primary to-primary/60 
+                           bg-clip-text text-transparent inline-block">
+                Photos Matched
+              </h2>
+            </div>
             <div
               className="relative glass-card p-4 rounded-xl"
               onMouseEnter={() => setIsAutoPlaying(false)}
@@ -115,18 +120,22 @@ const UserSearch = () => {
               </button>
 
               <div className="relative overflow-hidden rounded-lg">
-                <AspectRatio ratio={16 / 9}>
+                <AspectRatio ratio={4 / 3}>
                   <AnimatePresence mode="wait">
-                    <motion.img
+                    <motion.div
                       key={currentImageIndex}
-                      src={userPhotos[currentImageIndex].src}
-                      alt={userPhotos[currentImageIndex].title}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className="absolute inset-0 flex items-center justify-center"
                       initial={{ opacity: 0, scale: 1.1 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.5 }}
-                    />
+                    >
+                      <img
+                        src={userPhotos[currentImageIndex].src}
+                        alt={userPhotos[currentImageIndex].title}
+                        className="w-full h-full object-contain"
+                      />
+                    </motion.div>
                   </AnimatePresence>
                 </AspectRatio>
 
