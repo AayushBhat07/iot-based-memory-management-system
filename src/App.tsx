@@ -15,6 +15,7 @@ import PhotographerPortfolio from "./pages/photographer/Portfolio";
 import PhotographerEditProfile from "./pages/photographer/EditProfile";
 import UserOptions from "./pages/user/Options";
 import UserSearch from "./pages/user/Search";
+import UserEditProfile from "./pages/user/EditProfile";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
               <Route path="/photographer/edit-profile" element={<PhotographerEditProfile />} />
               <Route path="/user" element={<UserOptions />} />
               <Route path="/user/search" element={<UserSearch />} />
+              <Route path="/user/edit-profile" element={<UserEditProfile />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
