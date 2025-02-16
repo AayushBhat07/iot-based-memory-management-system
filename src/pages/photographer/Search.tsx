@@ -17,6 +17,9 @@ const Search = () => {
         return [];
       }
 
+      // Add a 3.5 second delay
+      await new Promise(resolve => setTimeout(resolve, 3500));
+
       // Hardcode the specific images we want to display for AayushB
       const photoUrls = [
         '/lovable-uploads/bdb64c32-f8ef-4c76-8c59-d7d148f9294e.png',
