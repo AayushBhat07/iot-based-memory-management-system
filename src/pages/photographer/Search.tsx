@@ -17,6 +17,7 @@ const Search = () => {
         return [];
       }
 
+      console.log('Fetching photos from trial2 bucket...');
       const { data: files, error } = await supabase
         .storage
         .from('trial2')
@@ -27,10 +28,21 @@ const Search = () => {
         throw error;
       }
 
-      return files?.map(file => ({
-        name: file.name,
-        url: `${supabase.storage.from('trial2').getPublicUrl(file.name).data.publicUrl}`,
-      })) || [];
+      console.log('Files found:', files);
+      
+      const photosWithUrls = files?.map(file => {
+        const { data: { publicUrl } } = supabase.storage
+          .from('trial2')
+          .getPublicUrl(file.name);
+        console.log('Generated URL for', file.name, ':', publicUrl);
+        return {
+          name: file.name,
+          url: publicUrl,
+        };
+      }) || [];
+
+      console.log('Final photos array:', photosWithUrls);
+      return photosWithUrls;
     },
     enabled: searchTerm.toLowerCase() === 'aayushb',
   });
