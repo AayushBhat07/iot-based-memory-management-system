@@ -13,7 +13,7 @@ const Search = () => {
   const { data: photos = [], isLoading } = useQuery({
     queryKey: ['photos', searchTerm],
     queryFn: async () => {
-      if (!searchTerm || searchTerm.toLowerCase() !== 'aayush') {
+      if (!searchTerm || searchTerm.toLowerCase() !== 'aayushb') {
         return [];
       }
 
@@ -32,7 +32,7 @@ const Search = () => {
         url: `${supabase.storage.from('trial2').getPublicUrl(file.name).data.publicUrl}`,
       })) || [];
     },
-    enabled: searchTerm.toLowerCase() === 'aayush',
+    enabled: searchTerm.toLowerCase() === 'aayushb',
   });
 
   return (
@@ -93,10 +93,9 @@ const Search = () => {
                         loading="lazy"
                       />
                     </AspectRatio>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 
-                                  group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent">
                       <span className="absolute bottom-3 right-3 text-white text-sm font-medium">
-                        Matched Photo
+                        Matched Photos
                       </span>
                     </div>
                   </motion.div>
@@ -110,7 +109,7 @@ const Search = () => {
                 className="text-center text-muted-foreground py-12"
               >
                 <p className="text-lg">No photos found</p>
-                <p className="text-sm mt-2">Try searching for "aayush"</p>
+                <p className="text-sm mt-2">Try searching for "AayushB"</p>
               </motion.div>
             ) : null}
           </AnimatePresence>
