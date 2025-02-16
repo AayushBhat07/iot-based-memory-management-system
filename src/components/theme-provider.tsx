@@ -34,6 +34,8 @@ export function ThemeProvider({
   useEffect(() => {
     const root = window.document.documentElement
 
+    // Add transition classes before changing theme
+    root.classList.add('transition-colors', 'duration-300', 'ease-in-out')
     root.classList.remove("light", "dark")
 
     if (theme === "system" && enableSystem) {
