@@ -17,32 +17,19 @@ const Search = () => {
         return [];
       }
 
-      console.log('Fetching photos from trial2 bucket...');
-      const { data: files, error } = await supabase
-        .storage
-        .from('trial2')
-        .list();
+      // Hardcode the specific images we want to display for AayushB
+      const photoUrls = [
+        '/lovable-uploads/58bedeb9-5c34-4db0-9d94-9209622ce934.png',
+        '/lovable-uploads/600052b9-b242-4a4b-8540-053d56ac376f.png',
+        '/lovable-uploads/71afab7e-446f-4770-ae2c-232771530e52.png',
+        '/lovable-uploads/b3dd945a-f7df-4a81-bd9d-19d132947b57.png',
+        '/lovable-uploads/dc85fab3-382b-4174-8022-9ba35a96ea0d.png'
+      ];
 
-      if (error) {
-        console.error('Error fetching photos:', error);
-        throw error;
-      }
-
-      console.log('Files found:', files);
-      
-      const photosWithUrls = files?.map(file => {
-        const { data: { publicUrl } } = supabase.storage
-          .from('trial2')
-          .getPublicUrl(file.name);
-        console.log('Generated URL for', file.name, ':', publicUrl);
-        return {
-          name: file.name,
-          url: publicUrl,
-        };
-      }) || [];
-
-      console.log('Final photos array:', photosWithUrls);
-      return photosWithUrls;
+      return photoUrls.map((url, index) => ({
+        name: `aayushb-photo-${index + 1}`,
+        url: url
+      }));
     },
     enabled: searchTerm.toLowerCase() === 'aayushb',
   });
