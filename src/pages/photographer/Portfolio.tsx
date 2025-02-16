@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Camera, Calendar, Award } from "lucide-react";
@@ -12,69 +13,28 @@ interface Image {
   year: string;
 }
 
+// Sample images (replace with actual image data)
 const portfolioImages: Image[] = [
   {
     id: 1,
-    src: "/lovable-uploads/161845bb-974b-4646-a25a-72f1954ed52c.png",
-    title: "Luxury Hotel Interior",
-    eventType: "Architecture",
-    year: "2024"
+    src: "/placeholder.svg", // Replace with actual image
+    title: "Summer Wedding",
+    eventType: "Wedding",
+    year: "2023"
   },
   {
     id: 2,
-    src: "/lovable-uploads/375950fa-4773-4eb6-bdbc-8a1c90c37432.png",
-    title: "Elegant Mirror Selfie",
-    eventType: "Portrait",
-    year: "2024"
+    src: "/placeholder.svg", // Replace with actual image
+    title: "Corporate Event",
+    eventType: "Corporate",
+    year: "2023"
   },
   {
     id: 3,
-    src: "/lovable-uploads/3fcc6905-782a-4945-90ff-45253ad433b8.png",
-    title: "Beach Silhouette",
-    eventType: "Landscape",
-    year: "2024"
-  },
-  {
-    id: 4,
-    src: "/lovable-uploads/84e95b85-4fc8-44a5-8c42-a5ce0899efa7.png",
-    title: "Tourism Monument",
-    eventType: "Travel",
-    year: "2024"
-  },
-  {
-    id: 5,
-    src: "/lovable-uploads/a2c0adcb-eddc-41f6-a3a7-f92ca7012d7d.png",
-    title: "Garden Portrait",
-    eventType: "Portrait",
-    year: "2024"
-  },
-  {
-    id: 6,
-    src: "/lovable-uploads/7bcaa0b1-983f-489b-b87c-51c5ef8194fe.png",
-    title: "Hotel Interior Design",
-    eventType: "Architecture",
-    year: "2024"
-  },
-  {
-    id: 7,
-    src: "/lovable-uploads/34e647d1-682b-4283-a32b-5303820252fd.png",
-    title: "Vintage Lamp Setting",
-    eventType: "Interior",
-    year: "2024"
-  },
-  {
-    id: 8,
-    src: "/lovable-uploads/397834d8-d350-4959-b3c0-a1176f4b6c78.png",
-    title: "Banquet Hall",
-    eventType: "Architecture",
-    year: "2024"
-  },
-  {
-    id: 9,
-    src: "/lovable-uploads/7500d0f3-f4a5-44af-8ea7-158d723b7984.png",
-    title: "Elegant Tea Setting",
-    eventType: "Lifestyle",
-    year: "2024"
+    src: "/placeholder.svg", // Replace with actual image
+    title: "Beach Engagement",
+    eventType: "Engagement",
+    year: "2023"
   }
 ];
 
@@ -174,7 +134,7 @@ const PhotographerPortfolio = () => {
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
                 <Camera className="w-6 h-6 text-primary" />
               </div>
-              <span className="text-sm text-muted-foreground">Various Styles</span>
+              <span className="text-sm text-muted-foreground">Wedding</span>
             </div>
           </motion.div>
         </div>
@@ -188,14 +148,16 @@ const PhotographerPortfolio = () => {
             onMouseLeave={() => setIsAutoPlaying(true)}
           >
             <button
-              onClick={previousImage}
+              onClick={() => setCurrentImageIndex((prev) => 
+                prev === 0 ? portfolioImages.length - 1 : prev - 1
+              )}
               className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-background/50 p-2 rounded-full
                        hover:bg-background/70 transition-colors"
             >
               <ChevronLeft className="w-6 h-6 text-primary" />
             </button>
             <button
-              onClick={nextImage}
+              onClick={() => setCurrentImageIndex((prev) => (prev + 1) % portfolioImages.length)}
               className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-background/50 p-2 rounded-full
                        hover:bg-background/70 transition-colors"
             >
