@@ -41,6 +41,27 @@ const userPhotos: Image[] = [
     title: "Campus Life",
     eventType: "Casual",
     year: "2024"
+  },
+  {
+    id: 4,
+    src: "/lovable-uploads/45915723-6041-4d3d-b93e-2f8bd60dfaa5.png",
+    title: "Bowling Night",
+    eventType: "Group",
+    year: "2024"
+  },
+  {
+    id: 5,
+    src: "/lovable-uploads/87d93acc-f7cf-418a-a316-60602b6e2e6a.png",
+    title: "Game Garden Fun",
+    eventType: "Group",
+    year: "2024"
+  },
+  {
+    id: 6,
+    src: "/lovable-uploads/e08e7dd3-f8e6-4246-8d5f-18412f970e0d.png",
+    title: "Art Gallery Visit",
+    eventType: "Group",
+    year: "2024"
   }
 ];
 
