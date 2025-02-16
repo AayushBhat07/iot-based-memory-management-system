@@ -23,27 +23,27 @@ const Search = () => {
       // Debug log to verify the delay is working
       console.log('After delay, preparing to return photos');
 
-      // Map photos with onError handler to help debug loading issues
+      // Using Unsplash placeholder images
       return [
         {
           name: 'aayushb-photo-1',
-          url: '/lovable-uploads/bdb64c32-f8ef-4c76-8c59-d7d148f9294e.png'
+          url: 'https://images.unsplash.com/photo-1721322800607-8c38375eef04'
         },
         {
           name: 'aayushb-photo-2',
-          url: '/lovable-uploads/b8fa06e6-943f-44a2-8674-5c3fb47b131c.png'
+          url: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b'
         },
         {
           name: 'aayushb-photo-3',
-          url: '/lovable-uploads/9c98c37d-5ddb-4fb4-a2c6-4a0d25bfe269.png'
+          url: 'https://images.unsplash.com/photo-1500673922987-e212871fec22'
         },
         {
           name: 'aayushb-photo-4',
-          url: '/lovable-uploads/c3a692f5-68ef-4ac9-b890-8772e8a432c5.png'
+          url: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b'
         },
         {
           name: 'aayushb-photo-5',
-          url: '/lovable-uploads/7a9b3320-c383-4f73-971a-d1ae101d308a.png'
+          url: 'https://images.unsplash.com/photo-1721322800607-8c38375eef04'
         }
       ];
     },
