@@ -43,6 +43,26 @@ const Search = () => {
         {
           name: 'aayushb-photo-5',
           url: '/lovable-uploads/d40075d8-ab61-47a1-985c-9efaabafd216.png'
+        },
+        {
+          name: 'aayushb-photo-6',
+          url: '/lovable-uploads/e34db7c5-cc84-4bba-a477-e51db63a45b4.png'
+        },
+        {
+          name: 'aayushb-photo-7',
+          url: '/lovable-uploads/d383bfd0-3b16-4a19-9239-a74ee2890eb6.png'
+        },
+        {
+          name: 'aayushb-photo-8',
+          url: '/lovable-uploads/a2e3b487-f495-4fcf-9a30-0af1d44a8986.png'
+        },
+        {
+          name: 'aayushb-photo-9',
+          url: '/lovable-uploads/456ab7b7-9215-4248-aecd-8acb709bedbd.png'
+        },
+        {
+          name: 'aayushb-photo-10',
+          url: '/lovable-uploads/5460cb79-a569-40a6-9b57-d03275862881.png'
         }
       ];
     },
