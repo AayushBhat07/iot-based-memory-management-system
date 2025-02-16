@@ -19,11 +19,11 @@ const Search = () => {
 
       // Hardcode the specific images we want to display for AayushB
       const photoUrls = [
-        '/lovable-uploads/58bedeb9-5c34-4db0-9d94-9209622ce934.png',
-        '/lovable-uploads/600052b9-b242-4a4b-8540-053d56ac376f.png',
-        '/lovable-uploads/71afab7e-446f-4770-ae2c-232771530e52.png',
-        '/lovable-uploads/b3dd945a-f7df-4a81-bd9d-19d132947b57.png',
-        '/lovable-uploads/dc85fab3-382b-4174-8022-9ba35a96ea0d.png'
+        '/lovable-uploads/bdb64c32-f8ef-4c76-8c59-d7d148f9294e.png',
+        '/lovable-uploads/b8fa06e6-943f-44a2-8674-5c3fb47b131c.png',
+        '/lovable-uploads/9c98c37d-5ddb-4fb4-a2c6-4a0d25bfe269.png',
+        '/lovable-uploads/c3a692f5-68ef-4ac9-b890-8772e8a432c5.png',
+        '/lovable-uploads/7a9b3320-c383-4f73-971a-d1ae101d308a.png'
       ];
 
       return photoUrls.map((url, index) => ({
