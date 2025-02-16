@@ -20,22 +20,38 @@ const Search = () => {
       // Add a 3.5 second delay
       await new Promise(resolve => setTimeout(resolve, 3500));
 
-      // Hardcode the specific images we want to display for AayushB
-      const photoUrls = [
-        '/lovable-uploads/bdb64c32-f8ef-4c76-8c59-d7d148f9294e.png',
-        '/lovable-uploads/b8fa06e6-943f-44a2-8674-5c3fb47b131c.png',
-        '/lovable-uploads/9c98c37d-5ddb-4fb4-a2c6-4a0d25bfe269.png',
-        '/lovable-uploads/c3a692f5-68ef-4ac9-b890-8772e8a432c5.png',
-        '/lovable-uploads/7a9b3320-c383-4f73-971a-d1ae101d308a.png'
-      ];
+      // Debug log to verify the delay is working
+      console.log('After delay, preparing to return photos');
 
-      return photoUrls.map((url, index) => ({
-        name: `aayushb-photo-${index + 1}`,
-        url: url
-      }));
+      // Map photos with onError handler to help debug loading issues
+      return [
+        {
+          name: 'aayushb-photo-1',
+          url: '/lovable-uploads/bdb64c32-f8ef-4c76-8c59-d7d148f9294e.png'
+        },
+        {
+          name: 'aayushb-photo-2',
+          url: '/lovable-uploads/b8fa06e6-943f-44a2-8674-5c3fb47b131c.png'
+        },
+        {
+          name: 'aayushb-photo-3',
+          url: '/lovable-uploads/9c98c37d-5ddb-4fb4-a2c6-4a0d25bfe269.png'
+        },
+        {
+          name: 'aayushb-photo-4',
+          url: '/lovable-uploads/c3a692f5-68ef-4ac9-b890-8772e8a432c5.png'
+        },
+        {
+          name: 'aayushb-photo-5',
+          url: '/lovable-uploads/7a9b3320-c383-4f73-971a-d1ae101d308a.png'
+        }
+      ];
     },
     enabled: searchTerm.toLowerCase() === 'aayushb',
   });
+
+  // Debug log to verify photos are being returned
+  console.log('Current photos:', photos);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary p-6">
@@ -93,6 +109,10 @@ const Search = () => {
                         alt={photo.name}
                         className="w-full h-full object-cover"
                         loading="lazy"
+                        onError={(e) => {
+                          console.error(`Error loading image: ${photo.url}`);
+                          e.currentTarget.src = '/placeholder.svg'; // Fallback image
+                        }}
                       />
                     </AspectRatio>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent">
