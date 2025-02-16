@@ -23,27 +23,26 @@ const Search = () => {
       // Debug log to verify the delay is working
       console.log('After delay, preparing to return photos');
 
-      // Using Unsplash placeholder images
       return [
         {
           name: 'aayushb-photo-1',
-          url: 'https://images.unsplash.com/photo-1721322800607-8c38375eef04'
+          url: '/lovable-uploads/7158740d-85ef-4b06-aef8-c8191d5d41fe.png'
         },
         {
           name: 'aayushb-photo-2',
-          url: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b'
+          url: '/lovable-uploads/1bedba7c-6af4-43ab-9518-8ce0c86f8f95.png'
         },
         {
           name: 'aayushb-photo-3',
-          url: 'https://images.unsplash.com/photo-1500673922987-e212871fec22'
+          url: '/lovable-uploads/258be48f-30a1-4d9d-bb22-39dcda65e5c6.png'
         },
         {
           name: 'aayushb-photo-4',
-          url: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b'
+          url: '/lovable-uploads/cd5b129d-a0ea-44c5-8e05-eede0025edc9.png'
         },
         {
           name: 'aayushb-photo-5',
-          url: 'https://images.unsplash.com/photo-1721322800607-8c38375eef04'
+          url: '/lovable-uploads/d40075d8-ab61-47a1-985c-9efaabafd216.png'
         }
       ];
     },
