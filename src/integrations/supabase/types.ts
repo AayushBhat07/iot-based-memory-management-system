@@ -499,6 +499,57 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          contact_email: string | null
+          cover_photo_url: string | null
+          facebook_url: string | null
+          full_name: string | null
+          id: string
+          instagram_url: string | null
+          linkedin_url: string | null
+          location: string | null
+          phone: string | null
+          twitter_url: string | null
+          updated_at: string | null
+          website_url: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          contact_email?: string | null
+          cover_photo_url?: string | null
+          facebook_url?: string | null
+          full_name?: string | null
+          id: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          phone?: string | null
+          twitter_url?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          contact_email?: string | null
+          cover_photo_url?: string | null
+          facebook_url?: string | null
+          full_name?: string | null
+          id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          phone?: string | null
+          twitter_url?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
