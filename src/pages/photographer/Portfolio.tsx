@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Camera, Calendar, Award } from "lucide-react";
@@ -23,16 +22,16 @@ const portfolioImages: Image[] = [
   },
   {
     id: 2,
-    src: "/lovable-uploads/dc85fab3-382b-4174-8022-9ba35a96ea0d.png",
-    title: "Garden Style",
-    eventType: "Portrait",
+    src: "/lovable-uploads/e43206ff-547b-4fd8-8e64-f8fbe55c5337.png",
+    title: "Life by the Beach",
+    eventType: "Lifestyle",
     year: "2024"
   },
   {
     id: 3,
-    src: "/lovable-uploads/58bedeb9-5c34-4db0-9d94-9209622ce934.png",
-    title: "Beach Silhouette",
-    eventType: "Creative",
+    src: "/lovable-uploads/164ef29d-349f-4ec8-8a6e-ec6329c0cddb.png",
+    title: "West 36th Street",
+    eventType: "Urban",
     year: "2024"
   },
   {
@@ -51,10 +50,10 @@ const portfolioImages: Image[] = [
   },
   {
     id: 6,
-    src: "/placeholder.svg",
-    title: "Summer Wedding",
-    eventType: "Wedding",
-    year: "2023"
+    src: "/lovable-uploads/fc597b57-84b6-4ee5-bfd1-7fb86aceed7c.png",
+    title: "Mountain Mist",
+    eventType: "Landscape",
+    year: "2024"
   }
 ];
 
@@ -64,12 +63,11 @@ const PhotographerPortfolio = () => {
   const [yearsCount, setYearsCount] = useState(0);
   const [eventsCount, setEventsCount] = useState(0);
 
-  // Counter animation on load
   useEffect(() => {
     const animateCounters = () => {
-      const targetYears = 10; // Replace with actual years
-      const targetEvents = 250; // Replace with actual events
-      const duration = 2000; // 2 seconds
+      const targetYears = 10;
+      const targetEvents = 250;
+      const duration = 2000;
       const steps = 50;
       const yearsIncrement = targetYears / steps;
       const eventsIncrement = targetEvents / steps;
@@ -94,7 +92,6 @@ const PhotographerPortfolio = () => {
     animateCounters();
   }, []);
 
-  // Autoplay functionality
   useEffect(() => {
     if (!isAutoPlaying) return;
 
