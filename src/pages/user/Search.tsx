@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, User } from "lucide-react";
 import {
   Select,
@@ -50,7 +50,7 @@ const UserSearch = () => {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
   // Autoplay functionality
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isAutoPlaying || !selectedUser) return;
 
     const timer = setInterval(() => {
