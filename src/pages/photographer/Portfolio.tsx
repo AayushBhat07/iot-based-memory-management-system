@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Camera, Calendar, Award } from "lucide-react";
@@ -44,41 +43,34 @@ const portfolioImages: Image[] = [
   },
   {
     id: 5,
-    src: "/lovable-uploads/cb354fa7-e845-4449-b68f-86edc7888849.png",
-    title: "Friends Gathering",
-    eventType: "Portrait",
-    year: "2024"
-  },
-  {
-    id: 6,
     src: "/lovable-uploads/a2c0adcb-eddc-41f6-a3a7-f92ca7012d7d.png",
     title: "Garden Portrait",
     eventType: "Portrait",
     year: "2024"
   },
   {
-    id: 7,
+    id: 6,
     src: "/lovable-uploads/7bcaa0b1-983f-489b-b87c-51c5ef8194fe.png",
     title: "Hotel Interior Design",
     eventType: "Architecture",
     year: "2024"
   },
   {
-    id: 8,
+    id: 7,
     src: "/lovable-uploads/34e647d1-682b-4283-a32b-5303820252fd.png",
     title: "Vintage Lamp Setting",
     eventType: "Interior",
     year: "2024"
   },
   {
-    id: 9,
+    id: 8,
     src: "/lovable-uploads/397834d8-d350-4959-b3c0-a1176f4b6c78.png",
     title: "Banquet Hall",
     eventType: "Architecture",
     year: "2024"
   },
   {
-    id: 10,
+    id: 9,
     src: "/lovable-uploads/7500d0f3-f4a5-44af-8ea7-158d723b7984.png",
     title: "Elegant Tea Setting",
     eventType: "Lifestyle",
