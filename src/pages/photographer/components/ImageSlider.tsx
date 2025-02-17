@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Calendar, Award } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -13,6 +13,79 @@ interface ImageSliderProps {
 export const ImageSlider = ({ images }: ImageSliderProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set([0]));
+  const preloadCount = 2; // Number of images to preload ahead
+  const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
+
+  // Preload initial images and setup image cache
+  useEffect(() => {
+    const preloadImage = (src: string): Promise<void> => {
+      return new Promise((resolve) => {
+        if (imageCache.current.has(src)) {
+          resolve();
+          return;
+        }
+
+        const img = new Image();
+        img.onload = () => {
+          imageCache.current.set(src, img);
+          resolve();
+        };
+        img.src = src;
+      });
+    };
+
+    // Preload first few images immediately
+    const preloadInitialImages = async () => {
+      const imagesToPreload = images.slice(0, preloadCount + 1);
+      await Promise.all(imagesToPreload.map(img => preloadImage(img.src)));
+      setLoadedImages(new Set(imagesToPreload.map((_, index) => index)));
+    };
+
+    preloadInitialImages();
+
+    // Add to browser's disk cache
+    images.forEach(image => {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = image.src;
+      document.head.appendChild(link);
+    });
+  }, [images]);
+
+  // Preload next images when current index changes
+  useEffect(() => {
+    const preloadNextImages = async () => {
+      const nextIndexes = Array.from({ length: preloadCount }, (_, i) => 
+        (currentImageIndex + i + 1) % images.length
+      );
+
+      // Only preload images that haven't been loaded yet
+      const newIndexes = nextIndexes.filter(index => !loadedImages.has(index));
+      
+      if (newIndexes.length > 0) {
+        await Promise.all(
+          newIndexes.map(async (index) => {
+            const img = new Image();
+            await new Promise((resolve) => {
+              img.onload = resolve;
+              img.src = images[index].src;
+            });
+            imageCache.current.set(images[index].src, img);
+          })
+        );
+
+        setLoadedImages(prev => {
+          const newSet = new Set(prev);
+          newIndexes.forEach(index => newSet.add(index));
+          return newSet;
+        });
+      }
+    };
+
+    preloadNextImages();
+  }, [currentImageIndex, images, loadedImages]);
 
   useEffect(() => {
     if (!isAutoPlaying) return;
@@ -67,6 +140,9 @@ export const ImageSlider = ({ images }: ImageSliderProps) => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
+              loading={currentImageIndex === 0 ? "eager" : "lazy"}
+              decoding="async"
+              fetchPriority={currentImageIndex === 0 ? "high" : "auto"}
             />
           </AnimatePresence>
         </AspectRatio>
