@@ -31,7 +31,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
 
         if (requiredRole) {
           const { data: profile, error: profileError } = await supabase
-            .from('user_profiles')
+            .from('profiles')
             .select('role')
             .eq('id', session.user.id)
             .single();
