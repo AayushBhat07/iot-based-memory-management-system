@@ -8,6 +8,8 @@ import { EventDashboard } from "./components/EventDashboard";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, X, Camera, ImagePlus } from "lucide-react";
 
+type EventType = "birthday" | "wedding" | "photoshoot" | "conference" | "formal_event" | "college_event" | "custom";
+
 const Upload = () => {
   const navigate = useNavigate();
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -16,7 +18,7 @@ const Upload = () => {
     name: string;
     date: string;
     location: string;
-    type: string;
+    type: EventType;
   } | null>(null);
 
   const handleUploadComplete = (urls: string[]) => {
@@ -27,7 +29,7 @@ const Upload = () => {
     name: string;
     date: string;
     location: string;
-    type: string;
+    type: EventType;
   }) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -35,16 +37,14 @@ const Upload = () => {
 
       const { data, error } = await supabase
         .from('events')
-        .insert([
-          {
-            event_name: eventData.name,
-            event_date: eventData.date,
-            event_location: eventData.location,
-            event_type: eventData.type.toLowerCase().replace(/ /g, '_'),
-            photographer_id: user.id,
-            status: 'published'
-          }
-        ])
+        .insert({
+          event_name: eventData.name,
+          event_date: eventData.date,
+          event_location: eventData.location,
+          event_type: eventData.type,
+          photographer_id: user.id,
+          status: 'published'
+        })
         .select()
         .single();
 
