@@ -7,22 +7,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const Index = () => {
-  // Fetch photos from the photos table
+  // Fetch media from the media table
   const { data: backgroundPhotos = [] } = useQuery({
     queryKey: ['background-photos'],
     queryFn: async () => {
-      const { data: photos, error } = await supabase
-        .from('photos')
-        .select('url')
+      const { data: media, error } = await supabase
+        .from('media')
+        .select('file_url')
+        .eq('file_type', 'image')
         .limit(5);
 
       if (error) {
-        console.error('Error fetching photos:', error);
+        console.error('Error fetching media:', error);
         return Array(5).fill('/placeholder.svg');
       }
 
-      return photos?.length > 0 
-        ? photos.map(photo => photo.url)
+      return media?.length > 0 
+        ? media.map(item => item.file_url)
         : Array(5).fill('/placeholder.svg');
     }
   });

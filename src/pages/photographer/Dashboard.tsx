@@ -10,7 +10,6 @@ import { formatDate } from "@/lib/utils";
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  // Check if user is authenticated
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -21,14 +20,12 @@ const Dashboard = () => {
     checkSession();
   }, [navigate]);
 
-  // Fetch photographer profile
   const { data: profile } = useQuery({
     queryKey: ["photographer-profile"],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return null;
 
-      // First try to get the existing profile
       const { data: existingProfile, error: fetchError } = await supabase
         .from("profiles")
         .select("*")
@@ -37,7 +34,6 @@ const Dashboard = () => {
 
       if (fetchError) throw fetchError;
 
-      // If profile doesn't exist, create it
       if (!existingProfile) {
         const { data: newProfile, error: insertError } = await supabase
           .from("profiles")
@@ -58,7 +54,6 @@ const Dashboard = () => {
     },
   });
 
-  // Fetch statistics with demo data fallback
   const { data: statistics } = useQuery({
     queryKey: ["photographer-statistics"],
     queryFn: async () => {
@@ -74,7 +69,6 @@ const Dashboard = () => {
 
       if (error) throw error;
       
-      // If no data, return demo data
       if (!data || data.length === 0) {
         const currentDate = new Date();
         const demoData = [];
@@ -82,11 +76,11 @@ const Dashboard = () => {
           const date = new Date(currentDate);
           date.setMonth(date.getMonth() - i);
           demoData.push({
-            month_year: date.toISOString().slice(0, 7), // Format: YYYY-MM
-            events_created: Math.floor(Math.random() * 8) + 2, // Random number between 2-10
-            photos_uploaded: Math.floor(Math.random() * 200) + 100, // Random number between 100-300
-            completion_rate: Math.floor(Math.random() * 30) + 70, // Random number between 70-100
-            avg_photos_per_event: Math.floor(Math.random() * 30) + 20, // Random number between 20-50
+            month_year: date.toISOString().slice(0, 7),
+            events_created: Math.floor(Math.random() * 8) + 2,
+            photos_uploaded: Math.floor(Math.random() * 200) + 100,
+            completion_rate: Math.floor(Math.random() * 30) + 70,
+            avg_photos_per_event: Math.floor(Math.random() * 30) + 20,
           });
         }
         return demoData;
@@ -96,7 +90,6 @@ const Dashboard = () => {
     },
   });
 
-  // Fetch upcoming events
   const { data: upcomingEvents } = useQuery({
     queryKey: ["upcoming-events"],
     queryFn: async () => {
@@ -106,7 +99,7 @@ const Dashboard = () => {
       const { data, error } = await supabase
         .from("events")
         .select("*")
-        .gte("date", new Date().toISOString().split('T')[0])  // Use only the date part
+        .gte("date", new Date().toISOString().split('T')[0])
         .order("date", { ascending: true })
         .limit(4);
 
@@ -122,7 +115,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -144,7 +136,6 @@ const Dashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Statistics Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <StatCard
             title="Total Events"
@@ -168,7 +159,6 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* Events Overview */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle>Events Overview</CardTitle>
@@ -208,29 +198,27 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Upcoming Events */}
         <h2 className="text-2xl font-bold mb-4">Upcoming Events</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           {upcomingEvents?.map((event) => (
             <Card key={event.id}>
               <CardHeader>
-                <CardTitle className="text-lg">{event.name}</CardTitle>
+                <CardTitle className="text-lg">{event.event_name}</CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  {formatDate(event.date)}
+                  {formatDate(event.event_date)}
                 </p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 text-sm">
-                  <p>Type: {event.type}</p>
-                  <p>Location: {event.location}</p>
-                  <p>Expected Photos: {event.expected_photos}</p>
+                  <p>Type: {event.event_type}</p>
+                  <p>Location: {event.event_location}</p>
+                  <p>Status: {event.status || 'Draft'}</p>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {/* Quick Actions */}
         <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <QuickActionCard
