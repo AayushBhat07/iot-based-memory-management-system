@@ -1,9 +1,11 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileUpload } from "./components/FileUpload";
-import { EventSelect } from "./components/EventSelect";
+import { EventDashboard } from "./components/EventDashboard";
+import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, X, Camera, ImagePlus } from "lucide-react";
 
 const Upload = () => {
