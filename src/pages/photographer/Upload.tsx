@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,10 +9,48 @@ import { ArrowLeft, X, Camera, ImagePlus } from "lucide-react";
 const Upload = () => {
   const navigate = useNavigate();
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
+  const [event, setEvent] = useState<{
+    id?: string;
+    name: string;
+    date: string;
+    location: string;
+    type: string;
+  } | null>(null);
 
   const handleUploadComplete = (urls: string[]) => {
     setUploadedImages(prev => [...prev, ...urls]);
+  };
+
+  const handleEventCreate = async (eventData: {
+    name: string;
+    date: string;
+    location: string;
+    type: string;
+  }) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from('events')
+        .insert([
+          {
+            event_name: eventData.name,
+            event_date: eventData.date,
+            event_location: eventData.location,
+            event_type: eventData.type.toLowerCase().replace(/ /g, '_'),
+            photographer_id: user.id,
+            status: 'published'
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+      setEvent({ ...eventData, id: data.id });
+    } catch (error) {
+      console.error('Failed to create event:', error);
+    }
   };
 
   const removeImage = (index: number) => {
@@ -34,45 +71,39 @@ const Upload = () => {
           </Button>
         </div>
 
-        <div className="max-w-3xl mx-auto space-y-8">
+        <div className="max-w-5xl mx-auto space-y-8">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <Camera className="h-8 w-8 text-primary" />
               <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                Upload Photos
+                Create New Event
               </h1>
             </div>
             <p className="text-muted-foreground text-lg">
-              Share your captured moments with your clients.
+              Set up your event details before uploading photos.
             </p>
           </div>
 
           <Card className="p-6 border-dashed bg-card/50 backdrop-blur-sm">
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <h2 className="text-xl font-semibold">Select Event</h2>
-                <p className="text-sm text-muted-foreground">
-                  Choose the event these photos belong to
-                </p>
-              </div>
-              <EventSelect onEventSelect={(eventId) => setSelectedEvent(eventId)} />
-            </div>
+            <EventDashboard onEventCreate={handleEventCreate} />
           </Card>
 
-          <Card className="p-6 border-dashed bg-card/50 backdrop-blur-sm">
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <ImagePlus className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-semibold">Upload Photos</h2>
+          {event && (
+            <Card className="p-6 border-dashed bg-card/50 backdrop-blur-sm">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <ImagePlus className="h-5 w-5 text-primary" />
+                    <h2 className="text-xl font-semibold">Upload Photos</h2>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Upload multiple photos at once. Supported formats: JPG, PNG, WEBP
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Upload multiple photos at once. Supported formats: JPG, PNG, WEBP
-                </p>
+                <FileUpload onUploadComplete={handleUploadComplete} />
               </div>
-              <FileUpload onUploadComplete={handleUploadComplete} />
-            </div>
-          </Card>
+            </Card>
+          )}
 
           {uploadedImages.length > 0 && (
             <div className="space-y-4">
@@ -101,7 +132,7 @@ const Upload = () => {
             </div>
           )}
 
-          {uploadedImages.length > 0 && selectedEvent && (
+          {uploadedImages.length > 0 && event && (
             <div className="flex justify-end">
               <Button className="w-full md:w-auto" size="lg">
                 Save to Event
