@@ -83,43 +83,34 @@ export type Database = {
       }
       events: {
         Row: {
-          completion_status: string | null
           created_at: string | null
-          date: string
-          expected_photos: number | null
+          event_date: string
+          event_location: string
+          event_name: string
+          event_type: Database["public"]["Enums"]["event_type"]
           id: string
-          location: string
-          name: string
           photographer_id: string
-          satisfaction_rating: number | null
-          type: Database["public"]["Enums"]["event_type"] | null
-          updated_at: string | null
+          status: Database["public"]["Enums"]["event_status"] | null
         }
         Insert: {
-          completion_status?: string | null
           created_at?: string | null
-          date: string
-          expected_photos?: number | null
+          event_date: string
+          event_location: string
+          event_name: string
+          event_type: Database["public"]["Enums"]["event_type"]
           id?: string
-          location: string
-          name: string
           photographer_id: string
-          satisfaction_rating?: number | null
-          type?: Database["public"]["Enums"]["event_type"] | null
-          updated_at?: string | null
+          status?: Database["public"]["Enums"]["event_status"] | null
         }
         Update: {
-          completion_status?: string | null
           created_at?: string | null
-          date?: string
-          expected_photos?: number | null
+          event_date?: string
+          event_location?: string
+          event_name?: string
+          event_type?: Database["public"]["Enums"]["event_type"]
           id?: string
-          location?: string
-          name?: string
           photographer_id?: string
-          satisfaction_rating?: number | null
-          type?: Database["public"]["Enums"]["event_type"] | null
-          updated_at?: string | null
+          status?: Database["public"]["Enums"]["event_status"] | null
         }
         Relationships: [
           {
@@ -205,6 +196,47 @@ export type Database = {
             columns: ["reference_embedding_id"]
             isOneToOne: false
             referencedRelation: "face_embeddings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media: {
+        Row: {
+          created_at: string | null
+          event_id: string
+          file_name: string
+          file_type: Database["public"]["Enums"]["media_type"]
+          file_url: string
+          id: string
+          thumbnail_url: string | null
+          upload_status: Database["public"]["Enums"]["upload_status"] | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_id: string
+          file_name: string
+          file_type: Database["public"]["Enums"]["media_type"]
+          file_url: string
+          id?: string
+          thumbnail_url?: string | null
+          upload_status?: Database["public"]["Enums"]["upload_status"] | null
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string
+          file_name?: string
+          file_type?: Database["public"]["Enums"]["media_type"]
+          file_url?: string
+          id?: string
+          thumbnail_url?: string | null
+          upload_status?: Database["public"]["Enums"]["upload_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]
@@ -658,6 +690,7 @@ export type Database = {
       }
     }
     Enums: {
+      event_status: "draft" | "published"
       event_type:
         | "birthday"
         | "wedding"
@@ -666,6 +699,8 @@ export type Database = {
         | "formal_event"
         | "college_event"
         | "custom"
+      media_type: "image" | "video"
+      upload_status: "pending" | "completed" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
