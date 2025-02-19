@@ -3,15 +3,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Header from "./components/Header";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PhotographerUpload from "./pages/photographer/Upload";
-import PhotographerLogin from "./pages/photographer/Login";
-import PhotographerDashboard from "./pages/photographer/Dashboard";
 import PhotographerPortfolio from "./pages/photographer/Portfolio";
 import PhotographerEditProfile from "./pages/photographer/EditProfile";
 import UserSearch from "./pages/user/Search";
@@ -36,15 +34,10 @@ const App = () => (
             <Toaster />
             <Sonner />
             <Routes>
+              {/* Main Page */}
               <Route path="/" element={<Index />} />
               
               {/* Photographer Routes */}
-              <Route path="/photographer/login" element={<PhotographerLogin />} />
-              <Route path="/photographer/dashboard" element={
-                <ProtectedRoute requiredRole="photographer">
-                  <PhotographerDashboard />
-                </ProtectedRoute>
-              } />
               <Route path="/photographer/upload" element={
                 <ProtectedRoute requiredRole="photographer">
                   <PhotographerUpload />
@@ -68,12 +61,6 @@ const App = () => (
                   <UserEditProfile />
                 </ProtectedRoute>
               } />
-              
-              {/* Redirect /user/login to /photographer/login for now */}
-              <Route path="/user/login" element={<Navigate to="/photographer/login" replace />} />
-              
-              {/* Redirect /user/dashboard to /user/search */}
-              <Route path="/user/dashboard" element={<Navigate to="/user/search" replace />} />
               
               {/* 404 Route */}
               <Route path="*" element={<NotFound />} />
