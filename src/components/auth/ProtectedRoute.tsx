@@ -25,7 +25,14 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
             title: "Authentication required",
             description: "Please sign in to access this page",
           });
-          navigate('/photographer/login');
+          // Redirect based on the required role
+          if (requiredRole === 'photographer') {
+            navigate('/photographer/login');
+          } else if (requiredRole === 'client') {
+            navigate('/user/login'); // Assuming you have a user login page
+          } else {
+            navigate('/');
+          }
           return;
         }
 
@@ -40,9 +47,18 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
             toast({
               variant: "destructive",
               title: "Access denied",
-              description: "You don't have permission to access this page",
+              description: requiredRole === 'photographer' 
+                ? "This page is only accessible to photographers" 
+                : "This page is only accessible to clients",
             });
-            navigate('/');
+            // Redirect to appropriate home page based on role
+            if (profile?.role === 'photographer') {
+              navigate('/photographer/dashboard');
+            } else if (profile?.role === 'client') {
+              navigate('/user/dashboard');
+            } else {
+              navigate('/');
+            }
             return;
           }
         }
@@ -53,7 +69,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
           title: "Error",
           description: "An error occurred while checking authentication",
         });
-        navigate('/photographer/login');
+        navigate('/');
       } finally {
         setIsLoading(false);
       }
@@ -63,7 +79,13 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT') {
-        navigate('/photographer/login');
+        if (requiredRole === 'photographer') {
+          navigate('/photographer/login');
+        } else if (requiredRole === 'client') {
+          navigate('/user/login');
+        } else {
+          navigate('/');
+        }
       }
     });
 
