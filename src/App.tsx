@@ -64,14 +64,7 @@ const App = () => (
                   </ProtectedRoute>
                 } 
               />
-              <Route 
-                path="/user" 
-                element={
-                  <ProtectedRoute requiredRole="client">
-                    <UserOptions />
-                  </ProtectedRoute>
-                } 
-              />
+              <Route path="/user/options" element={<UserOptions />} />
               <Route 
                 path="/user/search" 
                 element={
