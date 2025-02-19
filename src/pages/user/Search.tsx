@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, User } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -11,6 +11,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Image {
   id: number;
@@ -69,6 +70,7 @@ const UserSearch = () => {
   const [selectedUser, setSelectedUser] = useState<string>("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!isAutoPlaying || !selectedUser) return;
@@ -90,6 +92,14 @@ const UserSearch = () => {
     );
   };
 
+  const handleUserSelect = (value: string) => {
+    setSelectedUser(value);
+    toast({
+      title: "User Selected",
+      description: `Now showing photos for ${value}`,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary p-6">
       <div className="container mx-auto px-4 space-y-8">
@@ -102,7 +112,7 @@ const UserSearch = () => {
         </div>
 
         <div className="max-w-xs mx-auto">
-          <Select onValueChange={setSelectedUser} value={selectedUser}>
+          <Select onValueChange={handleUserSelect} value={selectedUser}>
             <SelectTrigger>
               <SelectValue placeholder="Select a user" />
             </SelectTrigger>
