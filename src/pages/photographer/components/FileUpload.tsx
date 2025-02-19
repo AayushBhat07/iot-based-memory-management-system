@@ -7,9 +7,11 @@ import { UploadCloud } from "lucide-react";
 
 interface FileUploadProps {
   onUploadComplete: (urls: string[]) => void;
+  eventId: string;
+  eventName: string;
 }
 
-export const FileUpload = ({ onUploadComplete }: FileUploadProps) => {
+export const FileUpload = ({ onUploadComplete, eventId, eventName }: FileUploadProps) => {
   const { toast } = useToast();
 
   const handleFileChange = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
@@ -17,10 +19,13 @@ export const FileUpload = ({ onUploadComplete }: FileUploadProps) => {
     if (!files || files.length === 0) return;
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       const uploadPromises = Array.from(files).map(async (file) => {
         const fileExt = file.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
-        const filePath = `uploads/${fileName}`;
+        const filePath = `${user.id}/${eventName}/${fileName}`;
 
         const { error: uploadError, data } = await supabase.storage
           .from('photographer-uploads')
@@ -34,6 +39,19 @@ export const FileUpload = ({ onUploadComplete }: FileUploadProps) => {
         const { data: { publicUrl } } = supabase.storage
           .from('photographer-uploads')
           .getPublicUrl(filePath);
+
+        // Create media record
+        const { error: mediaError } = await supabase
+          .from('media')
+          .insert({
+            event_id: eventId,
+            file_name: fileName,
+            file_url: publicUrl,
+            file_type: 'image',
+            upload_status: 'completed'
+          });
+
+        if (mediaError) throw mediaError;
 
         return publicUrl;
       });
@@ -53,7 +71,7 @@ export const FileUpload = ({ onUploadComplete }: FileUploadProps) => {
         description: "Failed to upload files. Please try again.",
       });
     }
-  }, [onUploadComplete, toast]);
+  }, [onUploadComplete, eventId, eventName, toast]);
 
   return (
     <div className="w-full">

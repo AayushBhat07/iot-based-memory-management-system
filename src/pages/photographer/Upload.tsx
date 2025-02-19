@@ -86,9 +86,11 @@ const Upload = () => {
             </p>
           </div>
 
-          <Card className="p-6 border-dashed bg-card/50 backdrop-blur-sm">
-            <EventDashboard onEventCreate={handleEventCreate} />
-          </Card>
+          {!event && (
+            <Card className="p-6 border-dashed bg-card/50 backdrop-blur-sm">
+              <EventDashboard onEventCreate={handleEventCreate} />
+            </Card>
+          )}
 
           {event && (
             <Card className="p-6 border-dashed bg-card/50 backdrop-blur-sm">
@@ -102,7 +104,11 @@ const Upload = () => {
                     Upload multiple photos at once. Supported formats: JPG, PNG, WEBP
                   </p>
                 </div>
-                <FileUpload onUploadComplete={handleUploadComplete} />
+                <FileUpload 
+                  onUploadComplete={handleUploadComplete} 
+                  eventId={event.id!} 
+                  eventName={event.name}
+                />
               </div>
             </Card>
           )}
@@ -131,14 +137,6 @@ const Upload = () => {
                   </Card>
                 ))}
               </div>
-            </div>
-          )}
-
-          {uploadedImages.length > 0 && event && (
-            <div className="flex justify-end">
-              <Button className="w-full md:w-auto" size="lg">
-                Save to Event
-              </Button>
             </div>
           )}
         </div>
