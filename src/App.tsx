@@ -3,26 +3,20 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Header from "./components/Header";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PhotographerUpload from "./pages/photographer/Upload";
+import PhotographerLogin from "./pages/photographer/Login";
+import PhotographerDashboard from "./pages/photographer/Dashboard";
 import PhotographerPortfolio from "./pages/photographer/Portfolio";
 import PhotographerEditProfile from "./pages/photographer/EditProfile";
-import UserSearch from "./pages/user/Search";
-import UserEditProfile from "./pages/user/EditProfile";
+import PhotographerSearch from "./pages/photographer/Search";
+import UserOptions from "./pages/user/Options";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -34,41 +28,14 @@ const App = () => (
             <Toaster />
             <Sonner />
             <Routes>
-              {/* Main Page */}
               <Route path="/" element={<Index />} />
-              
-              {/* Photographer Routes */}
-              <Route path="/photographer/upload" element={
-                <ProtectedRoute requiredRole="photographer">
-                  <PhotographerUpload />
-                </ProtectedRoute>
-              } />
+              <Route path="/photographer/upload" element={<PhotographerUpload />} />
+              <Route path="/photographer/login" element={<PhotographerLogin />} />
+              <Route path="/photographer/dashboard" element={<PhotographerDashboard />} />
               <Route path="/photographer/portfolio" element={<PhotographerPortfolio />} />
-              <Route path="/photographer/edit-profile" element={
-                <ProtectedRoute requiredRole="photographer">
-                  <PhotographerEditProfile />
-                </ProtectedRoute>
-              } />
-              
-              {/* User Routes */}
-              <Route path="/user/search" element={
-                <ProtectedRoute requiredRole="client">
-                  <UserSearch />
-                </ProtectedRoute>
-              } />
-              <Route path="/user/edit-profile" element={
-                <ProtectedRoute requiredRole="client">
-                  <UserEditProfile />
-                </ProtectedRoute>
-              } />
-              
-              {/* Redirect legacy routes to home */}
-              <Route path="/user/login" element={<Navigate to="/" replace />} />
-              <Route path="/photographer/login" element={<Navigate to="/" replace />} />
-              <Route path="/user/dashboard" element={<Navigate to="/user/search" replace />} />
-              <Route path="/photographer/dashboard" element={<Navigate to="/photographer/upload" replace />} />
-              
-              {/* 404 Route */}
+              <Route path="/photographer/edit-profile" element={<PhotographerEditProfile />} />
+              <Route path="/photographer/search" element={<PhotographerSearch />} />
+              <Route path="/user" element={<UserOptions />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

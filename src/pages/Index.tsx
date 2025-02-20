@@ -7,23 +7,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const Index = () => {
-  // Fetch media from the media table
+  // Fetch photos from the photos table
   const { data: backgroundPhotos = [] } = useQuery({
     queryKey: ['background-photos'],
     queryFn: async () => {
-      const { data: media, error } = await supabase
-        .from('media')
-        .select('file_url')
-        .eq('file_type', 'image')
+      const { data: photos, error } = await supabase
+        .from('photos')
+        .select('url')
         .limit(5);
 
       if (error) {
-        console.error('Error fetching media:', error);
+        console.error('Error fetching photos:', error);
         return Array(5).fill('/placeholder.svg');
       }
 
-      return media?.length > 0 
-        ? media.map(item => item.file_url)
+      return photos?.length > 0 
+        ? photos.map(photo => photo.url)
         : Array(5).fill('/placeholder.svg');
     }
   });
@@ -158,7 +157,7 @@ const Index = () => {
                 className="w-full group relative overflow-hidden transition-all duration-300
                           hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
               >
-                <Link to="/user/options">
+                <Link to="/user">
                   <span className="relative z-10 flex items-center justify-center">
                     Find Your Photos
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />

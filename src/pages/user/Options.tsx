@@ -1,3 +1,4 @@
+
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Upload, Search, Camera } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -187,7 +188,7 @@ const UserOptions = () => {
             </Link>
           </motion.div>
 
-          {/* Edit Profile Box */}
+          {/* View Photographer Portfolio Box */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -196,7 +197,7 @@ const UserOptions = () => {
             whileTap={{ scale: 0.98 }}
           >
             <Link 
-              to="/user/edit-profile"
+              to="/photographer/portfolio"
               className="block h-full"
             >
               <div className="h-full p-8 rounded-2xl glass-card hover:glass-card-hover
@@ -208,10 +209,10 @@ const UserOptions = () => {
                 </div>
                 <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-br from-primary to-primary/70 
                              bg-clip-text text-transparent">
-                  Edit Profile
+                  View Portfolio
                 </h2>
                 <p className="text-muted-foreground">
-                  Update your profile information and preferences
+                  Explore our photographer's stunning portfolio and previous work
                 </p>
               </div>
             </Link>

@@ -1,148 +1,193 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { FileUpload } from "./components/FileUpload";
-import { EventDashboard } from "./components/EventDashboard";
+import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/components/ui/use-toast";
+import { Upload, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, X, Camera, ImagePlus } from "lucide-react";
 
-type EventType = "birthday" | "wedding" | "photoshoot" | "conference" | "formal_event" | "college_event" | "custom";
+interface EventMetadata {
+  eventName: string;
+  location: string;
+  date: string;
+}
 
-const Upload = () => {
-  const navigate = useNavigate();
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [event, setEvent] = useState<{
-    id?: string;
-    name: string;
-    date: string;
-    location: string;
-    type: EventType;
-  } | null>(null);
+const PhotographerUpload = () => {
+  const [files, setFiles] = useState<FileList | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [metadata, setMetadata] = useState<EventMetadata>({
+    eventName: "",
+    location: "",
+    date: "",
+  });
+  const { toast } = useToast();
 
-  const handleUploadComplete = (urls: string[]) => {
-    setUploadedImages(prev => [...prev, ...urls]);
-  };
-
-  const handleEventCreate = async (eventData: {
-    name: string;
-    date: string;
-    location: string;
-    type: EventType;
-  }) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      const { data, error } = await supabase
-        .from('events')
-        .insert({
-          event_name: eventData.name,
-          event_date: eventData.date,
-          event_location: eventData.location,
-          event_type: eventData.type,
-          photographer_id: user.id,
-          status: 'published'
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      setEvent({ ...eventData, id: data.id });
-    } catch (error) {
-      console.error('Failed to create event:', error);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFiles(e.target.files);
     }
   };
 
-  const removeImage = (index: number) => {
-    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+  const handleMetadataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setMetadata(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpload = async () => {
+    if (!files || files.length === 0) {
+      toast({
+        title: "No files selected",
+        description: "Please select files to upload",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!metadata.eventName || !metadata.location || !metadata.date) {
+      toast({
+        title: "Missing metadata",
+        description: "Please fill in all event details",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploading(true);
+    setProgress(0);
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${metadata.eventName}/${Date.now()}-${i}.${fileExt}`;
+
+        const { error } = await supabase.storage
+          .from('photographer-uploads')
+          .upload(fileName, file);
+
+        if (error) throw error;
+
+        // Update progress
+        const currentProgress = ((i + 1) / files.length) * 100;
+        setProgress(currentProgress);
+      }
+
+      toast({
+        title: "Upload successful",
+        description: `Successfully uploaded ${files.length} images`,
+      });
+
+      // Reset form
+      setFiles(null);
+      setProgress(0);
+      const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+      
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description: "There was an error uploading your images",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center gap-4 mb-6">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate("/photographer/dashboard")}
-            className="flex items-center gap-2 hover:bg-background/80"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
-          </Button>
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="space-y-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-2">Upload Photos</h1>
+          <p className="text-muted-foreground">
+            Upload multiple photos and organize them by event
+          </p>
         </div>
 
-        <div className="max-w-5xl mx-auto space-y-8">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <Camera className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                Create New Event
-              </h1>
-            </div>
-            <p className="text-muted-foreground text-lg">
-              Set up your event details before uploading photos.
-            </p>
+        {/* Event Metadata Form */}
+        <div className="glass-card p-6 space-y-4">
+          <h2 className="text-xl font-semibold mb-4">Event Details</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Input
+              name="eventName"
+              placeholder="Event Name"
+              value={metadata.eventName}
+              onChange={handleMetadataChange}
+            />
+            <Input
+              name="location"
+              placeholder="Location"
+              value={metadata.location}
+              onChange={handleMetadataChange}
+            />
+            <Input
+              name="date"
+              type="date"
+              value={metadata.date}
+              onChange={handleMetadataChange}
+              className="md:col-span-2"
+            />
+          </div>
+        </div>
+
+        {/* Upload Section */}
+        <div className="glass-card p-6 space-y-4">
+          <div className="flex items-center justify-center w-full">
+            <label
+              htmlFor="file-upload"
+              className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <Upload className="w-12 h-12 mb-4 text-primary" />
+                <p className="mb-2 text-sm text-muted-foreground">
+                  <span className="font-semibold">Click to upload</span> or drag and drop
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  JPG, PNG, JPEG (MAX. 10MB each)
+                </p>
+              </div>
+              <input
+                id="file-upload"
+                type="file"
+                className="hidden"
+                multiple
+                accept=".jpg,.jpeg,.png"
+                onChange={handleFileChange}
+                disabled={uploading}
+              />
+            </label>
           </div>
 
-          {!event && (
-            <Card className="p-6 border-dashed bg-card/50 backdrop-blur-sm">
-              <EventDashboard onEventCreate={handleEventCreate} />
-            </Card>
-          )}
-
-          {event && (
-            <Card className="p-6 border-dashed bg-card/50 backdrop-blur-sm">
-              <div className="space-y-6">
+          {files && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <ImageIcon className="w-5 h-5 text-primary" />
+                <span>{files.length} files selected</span>
+              </div>
+              {uploading && (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <ImagePlus className="h-5 w-5 text-primary" />
-                    <h2 className="text-xl font-semibold">Upload Photos</h2>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Upload multiple photos at once. Supported formats: JPG, PNG, WEBP
+                  <Progress value={progress} />
+                  <p className="text-sm text-muted-foreground text-center">
+                    Uploading... {Math.round(progress)}%
                   </p>
                 </div>
-                <FileUpload 
-                  onUploadComplete={handleUploadComplete} 
-                  eventId={event.id!} 
-                  eventName={event.name}
-                />
-              </div>
-            </Card>
-          )}
-
-          {uploadedImages.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Uploaded Photos</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {uploadedImages.map((url, index) => (
-                  <Card key={url} className="relative group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                    <CardContent className="p-2">
-                      <img
-                        src={url}
-                        alt={`Uploaded ${index + 1}`}
-                        className="w-full aspect-square object-cover rounded-sm"
-                      />
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                        onClick={() => removeImage(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              )}
             </div>
           )}
+
+          <Button
+            onClick={handleUpload}
+            disabled={!files || uploading}
+            className="w-full"
+          >
+            {uploading ? "Uploading..." : "Upload Photos"}
+          </Button>
         </div>
       </div>
     </div>
   );
 };
 
-export default Upload;
+export default PhotographerUpload;
