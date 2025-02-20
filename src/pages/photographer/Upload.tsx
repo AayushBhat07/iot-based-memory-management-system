@@ -106,8 +106,8 @@ const PhotographerUpload = () => {
           </p>
         </div>
 
-        {/* Event Metadata Form */}
-        <div className="glass-card p-6 space-y-4">
+        {/* Event Metadata Form - First Box */}
+        <div className="glass-card p-6 space-y-4 bg-gradient-to-br from-[#e6e9f0]/80 to-[#eef1f5]/80">
           <h2 className="text-xl font-semibold mb-4">Event Details</h2>
           <div className="grid gap-4 md:grid-cols-2">
             <Input
@@ -132,12 +132,13 @@ const PhotographerUpload = () => {
           </div>
         </div>
 
-        {/* Upload Section */}
-        <div className="glass-card p-6 space-y-4">
+        {/* Upload Section - Second Box */}
+        <div className="glass-card p-6 space-y-4 bg-gradient-to-br from-[#d299c2]/80 to-[#fef9d7]/80">
           <div className="flex items-center justify-center w-full">
             <label
               htmlFor="file-upload"
-              className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed 
+                       rounded-lg cursor-pointer hover:bg-white/5 transition-colors"
             >
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
                 <Upload className="w-12 h-12 mb-4 text-primary" />

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, Search, Upload } from "lucide-react";
@@ -73,8 +72,8 @@ const UserSearch = () => {
           </p>
         </div>
 
-        {/* Main Dashboard */}
-        <div className="glass-card p-8 rounded-xl backdrop-blur-sm">
+        {/* Main Search Form - First Box */}
+        <div className="glass-card p-8 rounded-xl backdrop-blur-sm bg-gradient-to-br from-[#fdfcfb]/80 to-[#e2d1c3]/80">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid gap-6 md:grid-cols-2">
@@ -216,9 +215,10 @@ const UserSearch = () => {
           </Form>
         </div>
 
-        {/* Results Section */}
+        {/* Results Section - Second Box */}
         <div className="mt-16 text-center space-y-8">
-          <div className="glass-card p-8 rounded-xl">
+          <div className="glass-card p-8 rounded-xl bg-gradient 
+                       bg-gradient-to-br from-[#accbee]/80 to-[#e7f0fd]/80">
             <h2 className="text-2xl font-semibold bg-gradient-to-r from-primary to-primary/60 
                          bg-clip-text text-transparent">
               Your Matched Photos Will Appear Here
@@ -226,9 +226,6 @@ const UserSearch = () => {
             <p className="text-muted-foreground mt-2">
               Start your search to discover your photos
             </p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
-            {/* Photo results will be rendered here */}
           </div>
         </div>
       </div>
