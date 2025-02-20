@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Camera, Calendar, Award } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Progress } from "@/components/ui/progress";
+
 interface Image {
   id: number;
   src: string;
@@ -11,41 +12,48 @@ interface Image {
   year: string;
 }
 
-// Sample images (replace with actual image data)
-const portfolioImages: Image[] = [{
-  id: 1,
-  src: "/placeholder.svg",
-  // Replace with actual image
-  title: "Summer Wedding",
-  eventType: "Wedding",
-  year: "2023"
-}, {
-  id: 2,
-  src: "/placeholder.svg",
-  // Replace with actual image
-  title: "Corporate Event",
-  eventType: "Corporate",
-  year: "2023"
-}, {
-  id: 3,
-  src: "/placeholder.svg",
-  // Replace with actual image
-  title: "Beach Engagement",
-  eventType: "Engagement",
-  year: "2023"
-}];
+const portfolioImages: Image[] = [
+  {
+    id: 1,
+    src: "/lovable-uploads/7eddcc40-02cf-4ce2-af21-d85c97d808ff.png",
+    title: "Night Garden Illumination",
+    eventType: "Night Photography",
+    year: "2024"
+  },
+  {
+    id: 2,
+    src: "/lovable-uploads/1a134332-da24-4006-bf04-104afbb10355.png",
+    title: "Stairway to Lights",
+    eventType: "Architectural",
+    year: "2024"
+  },
+  {
+    id: 3,
+    src: "/lovable-uploads/60537293-2282-49fb-9ca6-b3345432dd65.png",
+    title: "Blue Hour Reflection",
+    eventType: "Landscape",
+    year: "2024"
+  },
+  {
+    id: 4,
+    src: "/lovable-uploads/6a7985f3-168d-4250-94ed-6cfef3cbd0db.png",
+    title: "Golden Lights Installation",
+    eventType: "Night Photography",
+    year: "2024"
+  }
+];
+
 const PhotographerPortfolio = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [yearsCount, setYearsCount] = useState(0);
   const [eventsCount, setEventsCount] = useState(0);
 
-  // Counter animation on load
   useEffect(() => {
     const animateCounters = () => {
-      const targetYears = 10; // Replace with actual years
-      const targetEvents = 250; // Replace with actual events
-      const duration = 2000; // 2 seconds
+      const targetYears = 10;
+      const targetEvents = 250;
+      const duration = 2000;
       const steps = 50;
       const yearsIncrement = targetYears / steps;
       const eventsIncrement = targetEvents / steps;
@@ -67,7 +75,6 @@ const PhotographerPortfolio = () => {
     animateCounters();
   }, []);
 
-  // Autoplay functionality
   useEffect(() => {
     if (!isAutoPlaying) return;
     const timer = setInterval(() => {
@@ -75,12 +82,15 @@ const PhotographerPortfolio = () => {
     }, 5000);
     return () => clearInterval(timer);
   }, [isAutoPlaying]);
+
   const nextImage = () => {
     setCurrentImageIndex(prev => (prev + 1) % portfolioImages.length);
   };
+
   const previousImage = () => {
     setCurrentImageIndex(prev => prev === 0 ? portfolioImages.length - 1 : prev - 1);
   };
+
   return <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
       <header className="container mx-auto px-4 py-6 text-center h-[20vh]">
         <motion.h1 initial={{
@@ -183,4 +193,5 @@ const PhotographerPortfolio = () => {
       </div>
     </div>;
 };
+
 export default PhotographerPortfolio;

@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          resource_id: string | null
+          resource_type: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       event_photographers: {
         Row: {
           added_at: string | null
@@ -47,43 +83,34 @@ export type Database = {
       }
       events: {
         Row: {
-          completion_status: string | null
           created_at: string | null
-          date: string
-          expected_photos: number | null
+          event_date: string
+          event_location: string
+          event_name: string
+          event_type: Database["public"]["Enums"]["event_type"]
           id: string
-          location: string
-          name: string
           photographer_id: string
-          satisfaction_rating: number | null
-          type: Database["public"]["Enums"]["event_type"] | null
-          updated_at: string | null
+          status: Database["public"]["Enums"]["event_status"] | null
         }
         Insert: {
-          completion_status?: string | null
           created_at?: string | null
-          date: string
-          expected_photos?: number | null
+          event_date: string
+          event_location: string
+          event_name: string
+          event_type: Database["public"]["Enums"]["event_type"]
           id?: string
-          location: string
-          name: string
           photographer_id: string
-          satisfaction_rating?: number | null
-          type?: Database["public"]["Enums"]["event_type"] | null
-          updated_at?: string | null
+          status?: Database["public"]["Enums"]["event_status"] | null
         }
         Update: {
-          completion_status?: string | null
           created_at?: string | null
-          date?: string
-          expected_photos?: number | null
+          event_date?: string
+          event_location?: string
+          event_name?: string
+          event_type?: Database["public"]["Enums"]["event_type"]
           id?: string
-          location?: string
-          name?: string
           photographer_id?: string
-          satisfaction_rating?: number | null
-          type?: Database["public"]["Enums"]["event_type"] | null
-          updated_at?: string | null
+          status?: Database["public"]["Enums"]["event_status"] | null
         }
         Relationships: [
           {
@@ -173,138 +200,40 @@ export type Database = {
           },
         ]
       }
-      matches: {
-        Row: {
-          confidence: number | null
-          created_at: string | null
-          guest_name: string | null
-          id: string
-          match_details: Json | null
-          match_score: number
-          photo_id: string
-          processed_at: string | null
-          reference_photo_url: string
-          user_id: string | null
-        }
-        Insert: {
-          confidence?: number | null
-          created_at?: string | null
-          guest_name?: string | null
-          id?: string
-          match_details?: Json | null
-          match_score: number
-          photo_id: string
-          processed_at?: string | null
-          reference_photo_url: string
-          user_id?: string | null
-        }
-        Update: {
-          confidence?: number | null
-          created_at?: string | null
-          guest_name?: string | null
-          id?: string
-          match_details?: Json | null
-          match_score?: number
-          photo_id?: string
-          processed_at?: string | null
-          reference_photo_url?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "matches_photo_id_fkey"
-            columns: ["photo_id"]
-            isOneToOne: false
-            referencedRelation: "photos"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "matches_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       media: {
         Row: {
           created_at: string | null
-          event_id: string | null
-          filename: string
+          event_id: string
+          file_name: string
+          file_type: Database["public"]["Enums"]["media_type"]
+          file_url: string
           id: string
-          media_type: string
-          metadata: Json | null
-          mime_type: string
-          size: number
-          updated_at: string | null
-          url: string
+          thumbnail_url: string | null
+          upload_status: Database["public"]["Enums"]["upload_status"] | null
         }
         Insert: {
           created_at?: string | null
-          event_id?: string | null
-          filename: string
+          event_id: string
+          file_name: string
+          file_type: Database["public"]["Enums"]["media_type"]
+          file_url: string
           id?: string
-          media_type: string
-          metadata?: Json | null
-          mime_type: string
-          size: number
-          updated_at?: string | null
-          url: string
+          thumbnail_url?: string | null
+          upload_status?: Database["public"]["Enums"]["upload_status"] | null
         }
         Update: {
           created_at?: string | null
-          event_id?: string | null
-          filename?: string
+          event_id?: string
+          file_name?: string
+          file_type?: Database["public"]["Enums"]["media_type"]
+          file_url?: string
           id?: string
-          media_type?: string
-          metadata?: Json | null
-          mime_type?: string
-          size?: number
-          updated_at?: string | null
-          url?: string
+          thumbnail_url?: string | null
+          upload_status?: Database["public"]["Enums"]["upload_status"] | null
         }
         Relationships: [
           {
             foreignKeyName: "media_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      photographer_photo_embeddings: {
-        Row: {
-          confidence_score: number
-          created_at: string | null
-          embedding: string | null
-          event_id: string | null
-          id: string
-          metadata: Json | null
-          photo_path: string
-        }
-        Insert: {
-          confidence_score: number
-          created_at?: string | null
-          embedding?: string | null
-          event_id?: string | null
-          id?: string
-          metadata?: Json | null
-          photo_path: string
-        }
-        Update: {
-          confidence_score?: number
-          created_at?: string | null
-          embedding?: string | null
-          event_id?: string | null
-          id?: string
-          metadata?: Json | null
-          photo_path?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "photographer_photo_embeddings_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
@@ -437,47 +366,6 @@ export type Database = {
         }
         Relationships: []
       }
-      photos: {
-        Row: {
-          created_at: string | null
-          event_id: string | null
-          guest_folder_path: string | null
-          id: string
-          is_matched: boolean | null
-          metadata: Json | null
-          url: string
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          event_id?: string | null
-          guest_folder_path?: string | null
-          id?: string
-          is_matched?: boolean | null
-          metadata?: Json | null
-          url: string
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          event_id?: string | null
-          guest_folder_path?: string | null
-          id?: string
-          is_matched?: boolean | null
-          metadata?: Json | null
-          url?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "photos_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           created_at: string | null
@@ -499,6 +387,81 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          endpoint: string
+          id: string
+          ip_address: unknown
+          request_count: number | null
+          window_start: string
+        }
+        Insert: {
+          endpoint: string
+          id?: string
+          ip_address: unknown
+          request_count?: number | null
+          window_start?: string
+        }
+        Update: {
+          endpoint?: string
+          id?: string
+          ip_address?: unknown
+          request_count?: number | null
+          window_start?: string
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          contact_email: string | null
+          cover_photo_url: string | null
+          facebook_url: string | null
+          full_name: string | null
+          id: string
+          instagram_url: string | null
+          linkedin_url: string | null
+          location: string | null
+          phone: string | null
+          twitter_url: string | null
+          updated_at: string | null
+          website_url: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          contact_email?: string | null
+          cover_photo_url?: string | null
+          facebook_url?: string | null
+          full_name?: string | null
+          id: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          phone?: string | null
+          twitter_url?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          contact_email?: string | null
+          cover_photo_url?: string | null
+          facebook_url?: string | null
+          full_name?: string | null
+          id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          phone?: string | null
+          twitter_url?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -517,6 +480,15 @@ export type Database = {
             }
             Returns: unknown
           }
+      check_rate_limit: {
+        Args: {
+          p_ip_address: unknown
+          p_endpoint: string
+          p_max_requests: number
+          p_window_seconds: number
+        }
+        Returns: boolean
+      }
       find_matches_in_photographer_photos: {
         Args: {
           reference_embedding: string
@@ -646,6 +618,15 @@ export type Database = {
             }
             Returns: unknown
           }
+      log_audit_event: {
+        Args: {
+          p_action: string
+          p_resource_type: string
+          p_resource_id: string
+          p_metadata?: Json
+        }
+        Returns: undefined
+      }
       sparsevec_out: {
         Args: {
           "": unknown
@@ -709,6 +690,7 @@ export type Database = {
       }
     }
     Enums: {
+      event_status: "draft" | "published"
       event_type:
         | "birthday"
         | "wedding"
@@ -717,6 +699,8 @@ export type Database = {
         | "formal_event"
         | "college_event"
         | "custom"
+      media_type: "image" | "video"
+      upload_status: "pending" | "completed" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
