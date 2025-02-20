@@ -214,16 +214,16 @@ const Dashboard = () => {
           {upcomingEvents?.map((event) => (
             <Card key={event.id}>
               <CardHeader>
-                <CardTitle className="text-lg">{event.name}</CardTitle>
+                <CardTitle className="text-lg">{event.event_name}</CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  {formatDate(event.date)}
+                  {formatDate(event.event_date)}
                 </p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 text-sm">
-                  <p>Type: {event.type}</p>
-                  <p>Location: {event.location}</p>
-                  <p>Expected Photos: {event.expected_photos}</p>
+                  <p>Type: {event.event_type}</p>
+                  <p>Location: {event.event_location}</p>
+                  <p>Status: {event.status}</p>
                 </div>
               </CardContent>
             </Card>
