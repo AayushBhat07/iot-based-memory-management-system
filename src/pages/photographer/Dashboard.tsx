@@ -106,8 +106,8 @@ const Dashboard = () => {
       const { data, error } = await supabase
         .from("events")
         .select("*")
-        .gte("date", new Date().toISOString().split('T')[0])  // Use only the date part
-        .order("date", { ascending: true })
+        .gte("event_date", new Date().toISOString().split('T')[0])
+        .order("event_date", { ascending: true })
         .limit(4);
 
       if (error) throw error;
@@ -209,7 +209,6 @@ const Dashboard = () => {
         </Card>
 
         {/* Upcoming Events */}
-        <h2 className="text-2xl font-bold mb-4">Upcoming Events</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           {upcomingEvents?.map((event) => (
             <Card key={event.id}>
