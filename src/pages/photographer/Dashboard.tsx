@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -146,30 +147,42 @@ const Dashboard = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Statistics Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          <StatCard
-            title="Total Events"
-            value={statistics?.[0]?.events_created || 0}
-            className="bg-purple-50 dark:bg-purple-900/10"
-          />
-          <StatCard
-            title="Photos Uploaded"
-            value={statistics?.[0]?.photos_uploaded || 0}
-            className="bg-blue-50 dark:bg-blue-900/10"
-          />
-          <StatCard
-            title="Completion Rate"
-            value={`${statistics?.[0]?.completion_rate || 0}%`}
-            className="bg-green-50 dark:bg-green-900/10"
-          />
-          <StatCard
-            title="Avg Photos/Event"
-            value={statistics?.[0]?.avg_photos_per_event || 0}
-            className="bg-orange-50 dark:bg-orange-900/10"
-          />
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="text-lg">Total Events</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{statistics?.[0]?.events_created || 0}</p>
+            </CardContent>
+          </Card>
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="text-lg">Photos Uploaded</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{statistics?.[0]?.photos_uploaded || 0}</p>
+            </CardContent>
+          </Card>
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="text-lg">Completion Rate</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{statistics?.[0]?.completion_rate || 0}%</p>
+            </CardContent>
+          </Card>
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="text-lg">Avg Photos/Event</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{statistics?.[0]?.avg_photos_per_event || 0}</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Events Overview */}
-        <Card className="mb-8">
+        <Card className="glass-card mb-8">
           <CardHeader>
             <CardTitle>Events Overview</CardTitle>
           </CardHeader>
@@ -211,7 +224,7 @@ const Dashboard = () => {
         {/* Upcoming Events */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           {upcomingEvents?.map((event) => (
-            <Card key={event.id}>
+            <Card key={event.id} className="glass-card hover:glass-card-hover transition-all duration-300">
               <CardHeader>
                 <CardTitle className="text-lg">{event.event_name}</CardTitle>
                 <p className="text-sm text-muted-foreground">
@@ -267,7 +280,7 @@ const StatCard = ({
   value: number | string; 
   className?: string;
 }) => (
-  <Card className={className}>
+  <Card className={`glass-card ${className}`}>
     <CardHeader>
       <CardTitle className="text-lg">{title}</CardTitle>
     </CardHeader>
@@ -287,7 +300,7 @@ const QuickActionCard = ({
   onClick: () => void;
 }) => (
   <Card 
-    className="transition-transform hover:scale-105 cursor-pointer"
+    className="glass-card hover:glass-card-hover transition-all duration-300 cursor-pointer"
     onClick={onClick}
   >
     <CardContent className="pt-6">
