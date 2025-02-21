@@ -1,5 +1,6 @@
+
 import { motion } from "framer-motion";
-import { Camera, User, ArrowRight } from "lucide-react";
+import { Camera, User, ArrowRight, Images } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
@@ -90,7 +91,7 @@ const Index = () => {
         </motion.div>
 
         {/* Split Cards */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {/* Photographer Card */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -131,8 +132,8 @@ const Index = () => {
 
           {/* User Card */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
             className="relative overflow-hidden rounded-2xl p-8 transition-all duration-300
                      bg-white/10 backdrop-blur-md border border-white/20
@@ -167,13 +168,52 @@ const Index = () => {
               </Button>
             </div>
           </motion.div>
+
+          {/* New Portfolio Card */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="relative overflow-hidden rounded-2xl p-8 transition-all duration-300
+                     bg-white/10 backdrop-blur-md border border-white/20
+                     hover:bg-white/15 hover:shadow-2xl hover:-translate-y-1
+                     dark:bg-gray-800/40 dark:border-white/10"
+            style={{
+              boxShadow: "0 4px 32px -12px rgba(0, 0, 0, 0.2)",
+            }}
+          >
+            <div className="space-y-4">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center
+                          transform transition-transform duration-300 hover:scale-110">
+                <Images className="h-6 w-6 text-primary" />
+              </div>
+              <h2 className="text-2xl font-semibold">Show Portfolios</h2>
+              <p className="text-muted-foreground">
+                Browse through our talented photographers' portfolios and discover their 
+                unique styles and creative work.
+              </p>
+              <Button 
+                asChild 
+                variant="outline"
+                className="w-full group relative overflow-hidden transition-all duration-300
+                          hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Link to="/photographer/portfolio">
+                  <span className="relative z-10 flex items-center justify-center">
+                    View Portfolios
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </span>
+                </Link>
+              </Button>
+            </div>
+          </motion.div>
         </div>
 
         {/* Features Grid */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
           className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto"
         >
           {features.map((feature, index) => (
