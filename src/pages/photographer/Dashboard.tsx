@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -7,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/utils";
+import { EventsBarChart } from "./components/EventsBarChart";
+import { EventsLineChart } from "./components/EventsLineChart";
+import { CompletionPieChart } from "./components/CompletionPieChart";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -187,36 +189,10 @@ const Dashboard = () => {
             <CardTitle>Events Overview</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-6 md:grid-cols-3">
-              {lastThreeMonths.map((stat, index) => {
-                const prevMonth = lastThreeMonths[index + 1];
-                const trend = prevMonth 
-                  ? calculateTrend(stat.events_created, prevMonth.events_created)
-                  : 0;
-
-                return (
-                  <Card key={stat.month_year} className="border-none shadow-none bg-muted/30">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium">
-                            {new Date(stat.month_year).toLocaleDateString('default', { month: 'long', year: 'numeric' })}
-                          </p>
-                          <h3 className="text-2xl font-bold mt-1">
-                            {stat.events_created} Events
-                          </h3>
-                          {prevMonth && (
-                            <p className={`text-sm mt-1 flex items-center gap-1 ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {trend >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                              {Math.abs(trend).toFixed(1)}% from previous month
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+            <div className="grid gap-6 grid-cols-1 lg:grid-cols-4">
+              <EventsBarChart data={statistics || []} />
+              <EventsLineChart data={statistics || []} />
+              <CompletionPieChart data={statistics || []} />
             </div>
           </CardContent>
         </Card>
