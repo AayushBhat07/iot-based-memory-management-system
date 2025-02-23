@@ -25,7 +25,11 @@ function BackgroundPhoto({ photoUrl, index }: { photoUrl: string; index: number 
 
   return (
     <motion.div
-      ref={ref}
+      ref={(node) => {
+        if (ref.current) {
+          ref.current = node as Element;
+        }
+      }}
       className="absolute rounded-2xl overflow-hidden shadow-lg bg-white/10 backdrop-blur-sm"
       style={{
         width: `${Math.random() * 100 + 150}px`,
