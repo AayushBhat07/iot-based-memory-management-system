@@ -135,20 +135,23 @@ const Dashboard = () => {
                 Member since {formatDate(profile?.created_at || new Date())}
               </p>
             </div>
-            <Button 
-              size="lg"
-              onClick={() => navigate("/photographer/upload")}
-            >
-              <Plus className="mr-2" />
-              Create New Event
-            </Button>
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <Button 
+                size="lg"
+                onClick={() => navigate("/photographer/upload")}
+              >
+                <Plus className="mr-2" />
+                Create New Event
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
         {/* Statistics Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
           <Card className="glass-card">
             <CardHeader>
               <CardTitle className="text-lg">Total Events</CardTitle>
@@ -184,12 +187,12 @@ const Dashboard = () => {
         </div>
 
         {/* Events Overview */}
-        <Card className="glass-card mb-8">
-          <CardHeader>
+        <Card className="glass-card mb-6">
+          <CardHeader className="p-4 sm:p-6">
             <CardTitle>Events Overview</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid gap-6 grid-cols-1 lg:grid-cols-4">
+          <CardContent className="p-4 sm:p-6">
+            <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-4">
               <EventsBarChart data={statistics || []} />
               <EventsLineChart data={statistics || []} />
               <CompletionPieChart data={statistics || []} />
@@ -198,7 +201,7 @@ const Dashboard = () => {
         </Card>
 
         {/* Upcoming Events */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
           {upcomingEvents?.map((event) => (
             <Card key={event.id} className="glass-card hover:glass-card-hover transition-all duration-300">
               <CardHeader>

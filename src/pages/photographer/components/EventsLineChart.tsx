@@ -17,32 +17,34 @@ export function EventsLineChart({ data }: EventsLineChartProps) {
   })).reverse();
 
   return (
-    <Card className="col-span-2">
-      <CardHeader>
-        <CardTitle>Photos Uploaded Trend</CardTitle>
+    <Card className="col-span-2 hover:shadow-lg transition-shadow duration-300">
+      <CardHeader className="p-4">
+        <CardTitle className="text-lg">Photos Uploaded</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="h-[300px] w-full"
+          className="h-[200px] w-full"
         >
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={formattedData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+            <LineChart data={formattedData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
               <XAxis
                 dataKey="month"
-                stroke="#888888"
-                fontSize={12}
+                stroke="hsl(var(--muted-foreground))"
+                fontSize={11}
                 tickLine={false}
                 axisLine={false}
+                tickMargin={8}
               />
               <YAxis
-                stroke="#888888"
-                fontSize={12}
+                stroke="hsl(var(--muted-foreground))"
+                fontSize={11}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(value) => `${value}`}
+                width={30}
               />
               <Tooltip
                 content={({ active, payload }) => {

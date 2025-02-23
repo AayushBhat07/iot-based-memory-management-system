@@ -20,16 +20,16 @@ export function CompletionPieChart({ data }: CompletionPieChartProps) {
   const COLORS = ["hsl(var(--primary))", "hsl(var(--muted))"];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Completion Rate</CardTitle>
+    <Card className="hover:shadow-lg transition-shadow duration-300">
+      <CardHeader className="p-4">
+        <CardTitle className="text-lg">Completion Rate</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="h-[300px] w-full"
+          className="h-[200px] w-full"
         >
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -37,16 +37,26 @@ export function CompletionPieChart({ data }: CompletionPieChartProps) {
                 data={pieData}
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
-                outerRadius={80}
+                innerRadius={40}
+                outerRadius={60}
                 paddingAngle={5}
                 dataKey="value"
               >
                 {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={COLORS[index]}
+                    className="transition-all duration-300 hover:opacity-80"
+                  />
                 ))}
               </Pie>
-              <Legend />
+              <Legend 
+                verticalAlign="bottom" 
+                height={36}
+                formatter={(value) => (
+                  <span className="text-xs text-muted-foreground">{value}</span>
+                )}
+              />
             </PieChart>
           </ResponsiveContainer>
         </motion.div>
