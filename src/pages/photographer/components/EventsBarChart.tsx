@@ -1,7 +1,6 @@
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { motion } from "framer-motion";
 
 interface EventsBarChartProps {
   data: Array<{
@@ -17,30 +16,25 @@ export function EventsBarChart({ data }: EventsBarChartProps) {
   })).reverse();
 
   return (
-    <Card className="col-span-2 hover:shadow-lg transition-shadow duration-300">
+    <Card className="hover:shadow-lg transition-all duration-300 h-full">
       <CardHeader className="p-4">
-        <CardTitle className="text-lg">Monthly Events</CardTitle>
+        <CardTitle className="text-lg font-medium">Monthly Events</CardTitle>
       </CardHeader>
-      <CardContent className="p-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="h-[200px] w-full"
-        >
+      <CardContent className="p-4 pt-0">
+        <div className="h-[180px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={formattedData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
               <XAxis 
                 dataKey="month"
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={11}
+                fontSize={12}
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
               />
               <YAxis
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={11}
+                fontSize={12}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(value) => `${value}`}
@@ -71,10 +65,11 @@ export function EventsBarChart({ data }: EventsBarChartProps) {
                 dataKey="events_created"
                 fill="hsl(var(--primary))"
                 radius={[4, 4, 0, 0]}
+                className="transition-all duration-300 hover:opacity-80"
               />
             </BarChart>
           </ResponsiveContainer>
-        </motion.div>
+        </div>
       </CardContent>
     </Card>
   );

@@ -12,6 +12,7 @@ import { EventsLineChart } from "./components/EventsLineChart";
 import { CompletionPieChart } from "./components/CompletionPieChart";
 import { EventCalendar } from "./components/EventCalendar";
 import { TodoList } from "./components/TodoList";
+import { motion } from "framer-motion";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -180,22 +181,57 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        <Card className="glass-card mb-6">
-          <CardHeader className="p-4 sm:p-6">
+        {/* Events Overview */}
+        <Card className="glass-card mb-6 overflow-hidden">
+          <CardHeader className="p-4 sm:p-6 border-b bg-card/50">
             <CardTitle>Events Overview</CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
-            <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-12">
-              <div className="lg:col-span-6 grid gap-4 grid-cols-1 md:grid-cols-2">
-                <EventsBarChart data={statistics || []} />
-                <EventsLineChart data={statistics || []} />
+            <div className="grid gap-6 grid-cols-1 lg:grid-cols-12">
+              {/* Charts Section */}
+              <div className="lg:col-span-8 grid gap-6">
+                <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <EventsBarChart data={statistics || []} />
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.1 }}
+                  >
+                    <EventsLineChart data={statistics || []} />
+                  </motion.div>
+                </div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.2 }}
+                  className="w-full"
+                >
+                  <CompletionPieChart data={statistics || []} />
+                </motion.div>
               </div>
-              <div className="lg:col-span-3">
-                <CompletionPieChart data={statistics || []} />
-              </div>
-              <div className="lg:col-span-3 grid gap-4">
-                <EventCalendar events={upcomingEvents} />
-                <TodoList />
+
+              {/* Sidebar Section */}
+              <div className="lg:col-span-4 grid gap-6">
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: 0.3 }}
+                >
+                  <EventCalendar events={upcomingEvents} />
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: 0.4 }}
+                >
+                  <TodoList />
+                </motion.div>
               </div>
             </div>
           </CardContent>

@@ -1,7 +1,6 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { motion } from "framer-motion";
 
 interface CompletionPieChartProps {
   data: Array<{
@@ -20,17 +19,12 @@ export function CompletionPieChart({ data }: CompletionPieChartProps) {
   const COLORS = ["hsl(var(--primary))", "hsl(var(--muted))"];
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-300">
+    <Card className="hover:shadow-lg transition-all duration-300">
       <CardHeader className="p-4">
-        <CardTitle className="text-lg">Completion Rate</CardTitle>
+        <CardTitle className="text-lg font-medium">Completion Rate</CardTitle>
       </CardHeader>
-      <CardContent className="p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="h-[200px] w-full"
-        >
+      <CardContent className="p-4 pt-0">
+        <div className="h-[180px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -59,7 +53,7 @@ export function CompletionPieChart({ data }: CompletionPieChartProps) {
               />
             </PieChart>
           </ResponsiveContainer>
-        </motion.div>
+        </div>
       </CardContent>
     </Card>
   );
