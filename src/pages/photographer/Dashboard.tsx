@@ -1,8 +1,7 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Calendar, Edit, Settings, Image, List, Plus, TrendingUp, TrendingDown } from "lucide-react";
+import { Calendar, Edit, Settings, Image, List, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -11,11 +10,12 @@ import { formatDate } from "@/lib/utils";
 import { EventsBarChart } from "./components/EventsBarChart";
 import { EventsLineChart } from "./components/EventsLineChart";
 import { CompletionPieChart } from "./components/CompletionPieChart";
+import { EventCalendar } from "./components/EventCalendar";
+import { TodoList } from "./components/TodoList";
 
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  // Check if user is authenticated
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -26,14 +26,12 @@ const Dashboard = () => {
     checkSession();
   }, [navigate]);
 
-  // Fetch photographer profile
   const { data: profile } = useQuery({
     queryKey: ["photographer-profile"],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return null;
 
-      // First try to get the existing profile
       const { data: existingProfile, error: fetchError } = await supabase
         .from("profiles")
         .select("*")
@@ -42,7 +40,6 @@ const Dashboard = () => {
 
       if (fetchError) throw fetchError;
 
-      // If profile doesn't exist, create it
       if (!existingProfile) {
         const { data: newProfile, error: insertError } = await supabase
           .from("profiles")
@@ -63,7 +60,6 @@ const Dashboard = () => {
     },
   });
 
-  // Fetch statistics with demo data fallback
   const { data: statistics } = useQuery({
     queryKey: ["photographer-statistics"],
     queryFn: async () => {
@@ -79,7 +75,6 @@ const Dashboard = () => {
 
       if (error) throw error;
       
-      // If no data, return demo data
       if (!data || data.length === 0) {
         const currentDate = new Date();
         const demoData = [];
@@ -87,11 +82,11 @@ const Dashboard = () => {
           const date = new Date(currentDate);
           date.setMonth(date.getMonth() - i);
           demoData.push({
-            month_year: date.toISOString().slice(0, 7), // Format: YYYY-MM
-            events_created: Math.floor(Math.random() * 8) + 2, // Random number between 2-10
-            photos_uploaded: Math.floor(Math.random() * 200) + 100, // Random number between 100-300
-            completion_rate: Math.floor(Math.random() * 30) + 70, // Random number between 70-100
-            avg_photos_per_event: Math.floor(Math.random() * 30) + 20, // Random number between 20-50
+            month_year: date.toISOString().slice(0, 7),
+            events_created: Math.floor(Math.random() * 8) + 2,
+            photos_uploaded: Math.floor(Math.random() * 200) + 100,
+            completion_rate: Math.floor(Math.random() * 30) + 70,
+            avg_photos_per_event: Math.floor(Math.random() * 30) + 20,
           });
         }
         return demoData;
@@ -101,7 +96,6 @@ const Dashboard = () => {
     },
   });
 
-  // Fetch upcoming events
   const { data: upcomingEvents } = useQuery({
     queryKey: ["upcoming-events"],
     queryFn: async () => {
@@ -127,7 +121,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -152,7 +145,6 @@ const Dashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Statistics Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
           <Card className="glass-card">
             <CardHeader>
@@ -188,21 +180,27 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Events Overview */}
         <Card className="glass-card mb-6">
           <CardHeader className="p-4 sm:p-6">
             <CardTitle>Events Overview</CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
-            <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-4">
-              <EventsBarChart data={statistics || []} />
-              <EventsLineChart data={statistics || []} />
-              <CompletionPieChart data={statistics || []} />
+            <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-12">
+              <div className="lg:col-span-6 grid gap-4 grid-cols-1 md:grid-cols-2">
+                <EventsBarChart data={statistics || []} />
+                <EventsLineChart data={statistics || []} />
+              </div>
+              <div className="lg:col-span-3">
+                <CompletionPieChart data={statistics || []} />
+              </div>
+              <div className="lg:col-span-3 grid gap-4">
+                <EventCalendar events={upcomingEvents} />
+                <TodoList />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Upcoming Events */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
           {upcomingEvents?.map((event) => (
             <Card key={event.id} className="glass-card hover:glass-card-hover transition-all duration-300">
@@ -223,7 +221,6 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Quick Actions */}
         <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <QuickActionCard
